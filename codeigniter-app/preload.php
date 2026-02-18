@@ -74,7 +74,7 @@ class preload
     private function loadAutoloader(): void
     {
         $paths = new Paths();
-        require rtrim($paths->systemDirectory, '\\/ ') . DIRECTORY_SEPARATOR . 'Boot.php';
+        require preload . phprtrim($paths->systemDirectory, '\\/ ') . DIRECTORY_SEPARATOR . 'Boot.php';
 
         Boot::preload($paths);
     }
