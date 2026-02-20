@@ -1,30 +1,30 @@
 <?php
 
-namespace App\Migrations;
+namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class MonthlyFeatureCountTable extends Migration
+class CreatePasswordResetTokenTable extends Migration
 {
     public function up(): void
     {
         $this->forge->addField([
             'id' => ['type' =>'INT','constraint' => 10, 'unsigned' => true, 'auto_increment' => true],
             'user_id' => ['type' =>'INT','constraint' => 10, 'unsigned' => true],
-            'attended_event' => ['type' =>'BOOLEAN','default' => true],
-            'year' => ['type' =>'INT','constraint' => 4],
-            'month' => ['type' =>'INT','constraint' => 2],
-            'count' => ['type' =>'INT','constraint' => 10],
+            'token_hash' => ['type' =>'VARCHAR','constraint' => 256],
+            'expired_at' => ['type' =>'DATETIME'],
+            'used_at DATETIME default null',
             'created_at DATETIME default current_timestamp',
+            'updated_at DATETIME default current_timestamp on update current_timestamp',
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addForeignKey('user_id','users','id','CASCADE','CASCADE');
-        $this->forge->createTable('monthly_feature_counts');
+        $this->forge->createTable('password_reset_tokens');
     }
 
     public function down(): void
     {
-        $this->forge->dropForeignKey('monthly_feature_counts','user_id');
-        $this->forge->dropTable('monthly_feature_counts');
+        $this->forge->dropForeignKey('password_reset_tokens','user_id');
+        $this->forge->dropTable('password_reset_tokens');
     }
 }
