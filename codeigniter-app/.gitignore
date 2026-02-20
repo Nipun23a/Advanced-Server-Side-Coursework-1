@@ -124,5 +124,3 @@ _modules/*
 
 /results/
 /phpunit*.xml
-
-/app/Config/Email.php
