@@ -1,10 +1,9 @@
-const {pool} = require('../config/database');
-const logger = require('../config/logger');
-
-const BidModel = require('../models/BidModel');
-const FeaturedAlumniModel = require('../models/FeaturedAlumniModel');
-const MonthlyFeatureCountModel = require('../models/MonthlyFeatureCountModel');
-const SponsorshipOfferModel = require('../models/SponsorshipOfferModel');
+import {pool} from "../config/database.js";
+import {logger} from "../config/logger.js";
+import BidModel from "../models/BidModel.js";
+import FeatureAlumniModel from "../models/FeatureAlumniModel.js";
+import MonthlyFeatureCountModel from "../models/MonthlyFeatureCountModel.js";
+import SponsorshipOfferModel from "../models/SponsorshipOfferModel.js";
 
 class WinnerService {
     static async selectDailyWinner(){
