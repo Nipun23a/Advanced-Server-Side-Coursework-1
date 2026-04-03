@@ -1,4 +1,4 @@
-const {pool} = require('../config/database');
+import {pool} from '../config/database.js';
 
 class ApiUsageLogModel {
     static async logRequest(logData){
@@ -61,4 +61,4 @@ class ApiUsageLogModel {
         return rows;
     }
 }
-module.exports = ApiUsageLogModel;
+export default ApiUsageLogModel;

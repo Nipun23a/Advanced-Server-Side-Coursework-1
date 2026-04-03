@@ -1,11 +1,11 @@
-const crypto = require("crypto");
-const { pool } = require("../config/database");
+import crypto from "crypto";
+import {pool} from "../config/database.js";
 
 
 const hashToken = (token) =>
   crypto.createHash("sha256").update(token).digest("hex");
 
-const authMiddleware = async (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
   try {
     const header = req.headers.authorization;
 
@@ -31,5 +31,3 @@ const authMiddleware = async (req, res, next) => {
     next(err);
   }
 };
-
-module.exports = authMiddleware;

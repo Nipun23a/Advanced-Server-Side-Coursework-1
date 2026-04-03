@@ -1,7 +1,4 @@
-const helmet = require('helmet');
-
-const helmetMiddleware = helmet({
+import helmet from "helmet";
+export const helmetMiddleware = helmet({
     contentSecurityPolicy : false,
 });
-
-module.exports = helmetMiddleware;

@@ -1,7 +1,7 @@
-const winston = require('winston');
-const path = require('path');
+import winston from "winston";
+import path from "path";
 
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'debug',
     format: winston.format.combine(
         winston.format.timestamp({format: 'YYYY-MM-DD HH:mm:ss'}),

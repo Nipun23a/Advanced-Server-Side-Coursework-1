@@ -1,11 +1,4 @@
-/**
- * ApiKeyModel
- * 
- * Handles all database operations for the api_keys table.
- * 
- */
-
-const pool = require('../config/database');
+import {pool} from "../config/database.js";
 
 class ApiKeyModel {
     static async create(userId, keyHash){
@@ -66,4 +59,4 @@ class ApiKeyModel {
     }
 }
 
-module.exports = ApiKeyModel;
+export default ApiKeyModel;

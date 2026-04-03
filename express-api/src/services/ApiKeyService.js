@@ -1,7 +1,8 @@
-const TokenGeneration = require('../utils/tokenGeneration');
-const crypto = require('crypto');
-const pool = require("../config/database");
-const logger = require('../config/logger');
+import TokenGeneration from "../utils/tokenGeneration.js";
+import crypto from "crypto";
+import {pool} from "../config/database.js";
+import {logger} from "../config/logger.js";
+
 class ApiKeyService {
 
     static async generateApiKey(userId) {
@@ -105,4 +106,4 @@ class ApiKeyService {
 
 }
 
-module.exports = ApiKeyService;
+export default ApiKeyService;

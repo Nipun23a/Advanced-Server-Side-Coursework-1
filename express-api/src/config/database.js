@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 const logger = require('./logger');
 
-const pool = mysql.createPool({
+export const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT) || 3306,
     user: process.env.DB_USER || 'root',
@@ -14,7 +14,7 @@ const pool = mysql.createPool({
     keepAliveInitialDelay: 10000
 });
 
-const testConnection = async () => {
+export const testConnection = async () => {
     try {
         const connection = await pool.getConnection();
         logger.info("Database connection established successfully");
@@ -25,5 +25,4 @@ const testConnection = async () => {
     }
 }
 
-module.exports = {pool,testConnection};
 

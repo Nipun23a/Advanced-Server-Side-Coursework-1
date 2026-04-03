@@ -1,6 +1,6 @@
 /* Send Success Response */
 
-const sendSuccess = (res, data = {}, message = 'Operation completed successfully', status = 200) => {
+export const sendSuccess = (res, data = {}, message = 'Operation completed successfully', status = 200) => {
     return res.status(status).json({
         success: true,
         data,
@@ -8,7 +8,7 @@ const sendSuccess = (res, data = {}, message = 'Operation completed successfully
     });
 };
 
-const sendError = (res, code, message, status = 400, details = []) => {
+export const sendError = (res, code, message, status = 400, details = []) => {
     return res.status(status).json({
         success: false,
         error: {
@@ -19,5 +19,3 @@ const sendError = (res, code, message, status = 400, details = []) => {
     });
 };
 
-
-module.exports = { sendSuccess, sendError };

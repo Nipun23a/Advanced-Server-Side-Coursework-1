@@ -1,4 +1,4 @@
-const {pool} = require('../config/database');
+import {pool} from "../config/database.js";
 
 class FeatureAlumniModel {
     static async create(data,connection = null){
@@ -138,4 +138,4 @@ class FeatureAlumniModel {
     }
 }
 
-module.exports = FeatureAlumniModel;
+export default FeatureAlumniModel;

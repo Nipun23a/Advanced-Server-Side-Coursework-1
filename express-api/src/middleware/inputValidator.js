@@ -1,6 +1,6 @@
-const {body, validationResult} = require('express-validator');
+import {body,validationResult} from "express-validator";
 
-const validateBidInput = [
+export const validateBidInput = [
     body("bid_amount")
     .isFloat({ gt: 0 })
     .withMessage("Bid must be greater than 0"),
@@ -13,5 +13,3 @@ const validateBidInput = [
     next();
   },
 ]
-
-module.exports = { validateBidInput };

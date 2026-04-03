@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 class TokenGeneration{
     static generateToken(byteLength = 32) {
@@ -60,4 +60,4 @@ class TokenGeneration{
     }
 }
 
-module.exports = TokenGeneration;
+export default TokenGeneration;

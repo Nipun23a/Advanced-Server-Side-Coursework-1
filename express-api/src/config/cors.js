@@ -1,4 +1,4 @@
-const corsOptions = {
+export const corsOptions = {
     origin: function (origin, callback) {
         if (!origin) {
             return callback(null, true);
@@ -36,4 +36,3 @@ const corsOptions = {
 
 }
 
-module.exports = corsOptions;

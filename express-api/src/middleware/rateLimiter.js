@@ -1,6 +1,6 @@
-const {rateLimit} = require('express-rate-limit');
+import rateLimit from 'express-rate-limit';
 
-const rateLimiter = rateLimit({
+export const rateLimiter = rateLimit({
     windowMs : 15 * 60 * 1000,
     max : 100,
     message : {
@@ -8,15 +8,10 @@ const rateLimiter = rateLimit({
     },
 });
 
-const authLimiter = rateLimit({
+export const authLimiter = rateLimit({
     windowMs : 15 * 60 * 1000,
     max : 10,
     message : {
         error: 'Too many login attempts from this IP, please try again later.'
     },
-})
-
-module.exports = {
-    rateLimiter,
-    authLimiter,
-}
+});

@@ -1,4 +1,4 @@
-const internalAuthMiddleware = (req, res, next) => {
+export const internalAuthMiddleware = (req, res, next) => {
     const internalHeader = req.headers['x-internal-key'];
 
     if (!internalHeader || internalHeader !== process.env.INTERNAL_API_TOKEN) {
@@ -6,5 +6,3 @@ const internalAuthMiddleware = (req, res, next) => {
     }
     next();
 }
-
-module.exports = internalAuthMiddleware;

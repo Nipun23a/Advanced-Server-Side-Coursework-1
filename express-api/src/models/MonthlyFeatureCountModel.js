@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+import{pool} from "../config/database.js";
 
 class MonthlyFeatureCountModel {
     static async findByUserAndMonth(userId, year, month) {
@@ -59,4 +59,4 @@ class MonthlyFeatureCountModel {
         };
     }
 }
-module.exports = MonthlyFeatureCountModel;
+export default MonthlyFeatureCountModel;

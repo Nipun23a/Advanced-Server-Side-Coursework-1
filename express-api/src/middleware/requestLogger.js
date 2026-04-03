@@ -1,13 +1,13 @@
-const db = require("../config/database");
+import {pool} from "../config/database.js";
 
-const requestLogger = async (req, res, next) => {
+export const requestLogger = async (req, res, next) => {
     const start = Date.now();
 
     res.on("finish", async () => {
         try {
         if (!req.apiKey) return;
 
-        await db.execute(
+        await pool.execute(
             `INSERT INTO api_usage_logs 
             (api_key_id, endpoint, http_method, accessed_at, source_ip) 
             VALUES (?, ?, ?, NOW(), ?)`,
@@ -24,5 +24,3 @@ const requestLogger = async (req, res, next) => {
     });
     next();
 }
-
-module.exports = requestLogger;

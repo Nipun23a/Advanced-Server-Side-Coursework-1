@@ -1,4 +1,4 @@
-const {pool} = require('../config/database');
+import {pool} from "../config/database.js";
 
 class BidModel {
     static async create(bidData){
@@ -127,4 +127,4 @@ class BidModel {
     }
 }
 
-module.exports = BidModel;
+export default BidModel;

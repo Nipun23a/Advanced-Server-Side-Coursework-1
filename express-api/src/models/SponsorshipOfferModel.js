@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+import {pool} from "../config/database.js";
 
 class SponsorshipOfferModel {
     static async create(data) {
@@ -97,4 +97,4 @@ class SponsorshipOfferModel {
     }
 }
 
-module.exports = SponsorshipOfferModel;
+export default SponsorshipOfferModel;

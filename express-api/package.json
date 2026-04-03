@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "This is my eatminster web api layer developed for Advanced Server-Side Coursework 1",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
