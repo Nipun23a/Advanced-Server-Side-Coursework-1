@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const { db } = require("../config/database");
+const { pool } = require("../config/database");
 
 
 const hashToken = (token) =>
@@ -16,7 +16,7 @@ const authMiddleware = async (req, res, next) => {
     const token = header.split(" ")[1];
     const hashed = hashToken(token);
 
-    const [rows] = await db.execute(
+    const [rows] = await pool.execute(
       "SELECT * FROM api_keys WHERE key_hash = ? AND is_active = 1",
       [hashed]
     );
