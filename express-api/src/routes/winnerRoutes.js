@@ -59,7 +59,7 @@ router.get('/today', authenticateAny, WinnerController.getTodayWinner);
  *       401:
  *         description: Authentication required
  */
-router.get('/history', authenticateAny, validatePagination, WinnerController.getWinnersHistory);
+router.get('/history', authenticateAny, validatePagination, WinnerController.getWinnerHistory);
 
 /**
  * @swagger
