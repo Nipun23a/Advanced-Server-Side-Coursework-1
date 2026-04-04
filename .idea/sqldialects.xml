@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/express-api/src/middleware/requestLogger.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/models/ApiKeyModel.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/models/ApiUsageLogModel.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/models/BidModel.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/models/FeatureAlumniModel.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/models/MonthlyFeatureCountModel.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/models/SponsorModel.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/models/SponsorshipOfferModel.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/services/ApiKeyService.js" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/express-api/src/services/SponsorshipService.js" dialect="GenericSQL" />
+  </component>
+</project>
