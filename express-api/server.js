@@ -16,6 +16,8 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from "./src/config/swagger.js";
 
 import cron from 'node-cron';
+import {internalAuthMiddleware} from "./src/middleware/internalAuthMiddleware.js";
+import {authMiddleware} from "./src/middleware/authMiddleware.js";
 
 
 
@@ -41,9 +43,9 @@ app.get("/test-api", (req, res) => {
     res.json({ message: "Test route working" });
 });
 
-app.use("/api/sponsorships", SponsorshipRoutes);
+app.use("/api/sponsorships",authMiddleware, SponsorshipRoutes);
 console.log("API Key routes loaded");
-app.use("/api/v1/api-keys", apiKeyRoutes);
+app.use("/api/v1/api-keys",internalAuthMiddleware,apiKeyRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
