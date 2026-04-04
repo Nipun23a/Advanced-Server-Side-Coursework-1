@@ -9,8 +9,8 @@ class InternalApiClient
 
     public function __construct()
     {
-        $this->baseUrl = getenv('INTERNAL_API_URL');
-        $this -> secret = getenv('INTERNAL_API_SECRET');
+        $this->baseUrl = env('INTERNAL_API_URL');
+        $this->secret = env('INTERNAL_API_SECRET');
     }
 
     public function getSecret($method, $endpoint, $data = [] )
