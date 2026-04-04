@@ -17,7 +17,7 @@ class ApiKeyController{
     static async getKeys(req,res,next){
         try{
             const userId = 1;
-            const keys = await ApiKeyService.getKey(userId);
+            const keys = await ApiKeyService.getKeys(userId);
             res.json({
                 success: true,
                 data: keys,
