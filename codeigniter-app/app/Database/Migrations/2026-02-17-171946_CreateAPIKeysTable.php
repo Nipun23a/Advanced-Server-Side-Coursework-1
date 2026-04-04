@@ -12,6 +12,7 @@ class CreateAPIKeysTable extends Migration
             'id' => ['type' =>'INT','constraint' => 10, 'unsigned' => true, 'auto_increment' => true],
             'user_id' => ['type' =>'INT','constraint' => 10, 'unsigned' => true],
             'key_hash' => ['type' =>'VARCHAR','constraint' => 256],
+            'is_active' => ['type' =>'BOOLEAN','default' => true],
             'created_at DATETIME default current_timestamp',
             'revoked_at DATETIME default null',
         ]);

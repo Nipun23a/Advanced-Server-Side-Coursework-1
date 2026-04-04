@@ -10,11 +10,13 @@ import {errorHandler} from "./src/middleware/errorHandler.js";
 import {requestLogger} from "./src/middleware/requestLogger.js";
 
 import SponsorshipRoutes from "./src/routes/sponsorshipRoutes.js";
+import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";
 
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from "./src/config/swagger.js";
 
 import cron from 'node-cron';
+
 
 
 dotenv.config();
@@ -35,7 +37,13 @@ app.get("/", (req, res) => {
     });
 });
 
+app.get("/test-api", (req, res) => {
+    res.json({ message: "Test route working" });
+});
+
 app.use("/api/sponsorships", SponsorshipRoutes);
+console.log("API Key routes loaded");
+app.use("/api/v1/api-keys", apiKeyRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
