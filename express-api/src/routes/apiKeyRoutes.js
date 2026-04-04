@@ -1,24 +1,12 @@
 import express from "express";
+import ApiKeyController from "../controllers/apiKeyController.js";
 const router = express.Router();
-router.get("/", (req, res) => {
-    res.json({
-        success: true,
-        data: []
-    });
-});
-router.post("/", (req, res) => {
-    res.json({
-        success: true,
-        data: {
-            api_key: "alum_test123456"
-        }
-    });
-});
-router.delete("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: "Key revoked"
-    });
-});
+
+
+router.post("/", ApiKeyController.createKey);
+router.get("/", ApiKeyController.getKeys);
+router.delete("/:id", ApiKeyController.revokeKey);
+router.get("/:id/stats", ApiKeyController.getStats);
+
 
 export default router;
