@@ -34,6 +34,13 @@
         .auth-card .card-body {
             padding: 30px;
         }
+        .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .dropdown-item:hover {
+            background-color: #f4f6f9;
+        }
         .btn-primary {
             background-color: #1B2A4A;
             border-color: #1B2A4A;
@@ -76,8 +83,27 @@
                         <a class="nav-link" href="/sponsorship/offers">Sponsorships</a>
                     </li>
                     <?php if (session()->get('user_role') === 'developer' || session()->get('user_role') === 'admin'): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/developer/api-keys">API Keys</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="developerDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-code-slash me-1"></i> Developer
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="/developer/api-keys">
+                                        <i class="bi bi-key me-2"></i> API Keys
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/developer/api-docs">
+                                        <i class="bi bi-file-earmark-text me-2"></i> API Documentation
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/developer/usage">
+                                        <i class="bi bi-graph-up me-2"></i> Usage Stats
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     <?php endif; ?>
                 </ul>

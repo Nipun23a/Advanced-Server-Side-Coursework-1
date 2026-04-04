@@ -6,6 +6,7 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'AuthController::showLogin');
+$routes->get('dashboard', 'DashboardController::index');
 
 // Authentication Routes
 $routes->group('auth', function ($routes) {
@@ -28,4 +29,17 @@ $routes->group('auth', function ($routes) {
     $routes->post('forgot-password', 'AuthController::forgotPassword');
     $routes->get('reset-password', 'AuthController::showResetPassword');
     $routes->post('reset-password', 'AuthController::resetPassword');
+});
+
+$routes->group('api/developer', function($routes) {
+    $routes->get('api-keys', 'Api\DeveloperApiController::index');
+    $routes->post('api-keys', 'Api\DeveloperApiController::create');
+    $routes->delete('api-keys/(:num)', 'Api\DeveloperApiController::revoke/$1');
+    $routes->get('api-keys/(:num)/stats', 'Api\DeveloperApiController::stats/$1');
+});
+
+$routes->group('developer', function($routes) {
+    $routes->get('api-keys', 'DeveloperController::apiKeys');
+    $routes->get('api-docs', 'DeveloperController::apiDocs');
+    $routes->get('usage', 'DeveloperController::usage');
 });
