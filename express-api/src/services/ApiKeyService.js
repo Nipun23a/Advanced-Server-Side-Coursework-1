@@ -1,43 +1,86 @@
-import crypto from "crypto";
+
 import ApiKeyModel from "../models/ApiKeyModel.js";
 import ApiUsageLogModel from "../models/ApiUsageLogModel.js";
+import TokenGeneration from "../utils/tokenGeneration.js";
+import {logger} from "../config/logger.js";
+
 
 class ApiKeyService {
-
-    static generateKey() {
-        return "alum_" + crypto.randomBytes(16).toString("hex");
-    }
-
-    static hashKey(key) {
-        return crypto.createHash("sha256").update(key).digest("hex");
-    }
-
-    static async createKey(userId) {
-        const apiKey = this.generateKey();
-        const hash = this.hashKey(apiKey);
-
-        const saved = await ApiKeyModel.create(userId, hash);
-
+    static async generateKey(userId){
+        const rawKey = TokenGeneration.generateAPIKey();
+        const keyHash = TokenGeneration.hashToken(rawKey);
+        const result = await ApiKeyModel.create(userId,keyHash);
+        logger.info(`API key generated: key_id=${result.insertId}, user_id=${userId}`);
         return {
-            id: saved.id,
-            api_key: apiKey
+            key_id: result.insertId,
+            key: rawKey,
+            warning: 'Save this key now. You will not be able to see it again!',
         };
     }
 
-    static async getKeys(userId) {
-        return ApiKeyModel.findAllByUser(userId);
+    static async validateKey(rawKey){
+        if (!TokenGeneration.isValidAPIKeyFormat(rawKey)){
+            logger.warn('API key formal validation failed');
+            return null;
+        }
+
+        const keyHash = TokenGeneration.hashToken(rawKey);
+        const apiKey = await ApiKeyModel.findByHash(keyHash);
+        if (!apiKey){
+            logger.warn('API key not found in database');
+            return null;
+        }
+        if (!apiKey.is_active || apiKey.revoked_at != null){
+            logger.warn(`Revoked API key attempted: key_id=${apiKey.id}`);
+            return null;
+        }
+        return apiKey;
     }
 
-    static async revokeKey(keyId, userId) {
-        const key = await ApiKeyModel.findByIdAndUser(keyId, userId);
-
-        if (!key) throw new Error("Key not found");
-
-        return ApiKeyModel.revoke(keyId);
+    static async listKeys(userId) {
+        const keys = await ApiKeyModel.findAllByUser(userId);
+        return { keys };
     }
 
-    static async getStats(apiKeyId) {
-        return ApiUsageLogModel.getUsageByDate(apiKeyId);
+    static async getKeyStats(keyId){
+        const key = await ApiKeyModel.findById(keyId);
+        if (!key){
+            return null;
+        }
+        const statistics = await ApiUsageLogModel.getFullStats(keyId);
+
+        return {
+            key: {
+                id: key.id,
+                is_active: key.is_active,
+                created_at: key.created_at,
+                revoked_at: key.revoked_at,
+            },
+            statistics,
+        };
+    }
+
+    static async revokeKey(keyId,userId){
+        const key = await ApiKeyModel.findByIdAndUser(userId,keyId);
+        if (!key){
+            const error = new Error('API key not found');
+            error.code = 'NOT_FOUND';
+            error.status = 404;
+            throw error;
+        }
+        if (!key.is_active){
+            const error = new Error('This API key has already been revoked.');
+            error.code = 'KEY_ALREADY_REVOKED';
+            error.status = 400;
+            throw error;
+        }
+        await ApiKeyModel.revoke(keyId);
+        logger.info(`API key revoked: key_id=${keyId}, user_id=${userId}`);
+        return {
+            id: keyId,
+            is_active: false,
+            revoked_at: new Date().toISOString(),
+        };
     }
 }
 

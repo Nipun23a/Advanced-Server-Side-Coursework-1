@@ -29,6 +29,14 @@ class ApiKeyModel {
         return rows[0] || null;
     }
 
+    static async findById(keyId){
+        const [rows] = await pool.execute(
+            'SELECT id,user_id,is_active,created_at,revoked_at FROM api_keys WHERE id = ?',
+            [keyId]
+        );
+        return rows.length > 0 ? rows[0] : null;
+    }
+
     static async findAllByUser(userId) {
         const [rows] = await pool.execute(
             `SELECT id, is_active, created_at, revoked_at
@@ -43,12 +51,9 @@ class ApiKeyModel {
     static async findByIdAndUser(keyId, userId) {
         userId = 1;
         const [rows] = await pool.execute(
-            `SELECT id, user_id, is_active, created_at, revoked_at
-         FROM api_keys
-         WHERE id = ? AND user_id = ?`,
+            'SELECT id, user_id, is_active, created_at, revoked_at FROM api_keys WHERE id = ? AND user_id = ?',
             [keyId, userId]
         );
-
         return rows.length > 0 ? rows[0] : null;
     }
 
