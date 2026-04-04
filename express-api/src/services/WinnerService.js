@@ -301,4 +301,4 @@ class WinnerService {
     }
 }
 
-module.exports = WinnerService;
+export default WinnerService;
