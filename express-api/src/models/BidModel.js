@@ -11,16 +11,7 @@ class BidModel {
              VALUES (?, ?, 'active', ?, false, ?, NOW(), NOW())`,
             [user_id, bid_amount, bid_date, sponsorship_total]
         );
-
-        return {
-            id: result.insertId,
-            user_id,
-            bid_amount,
-            bid_status: 'active',
-            bid_date,
-            is_cancelled: false,
-            sponsorship_total,
-        };
+        return result;
     }
 
     static async findById(bidId) {
@@ -28,7 +19,7 @@ class BidModel {
             `SELECT * FROM bids WHERE id = ?`,
             [bidId]
         );
-        return rows[0] || null;
+        return rows.length > 0 ? rows[0] : null;
     }
 
     static async findByIdAndUser(bidId, userId) {
@@ -36,12 +27,19 @@ class BidModel {
             `SELECT * FROM bids WHERE id = ? AND user_id = ?`,
             [bidId, userId]
         );
-        return rows[0] || null;
+        return rows.length > 0 ? rows[0] : null;
     }
-
+    static async findActiveByUserAndDate(userId, bidDate) {
+        const [rows] = await pool.execute(
+            `SELECT * FROM bids
+             WHERE user_id = ? AND bid_date = ? AND is_cancelled = false`,
+            [userId, bidDate]
+        );
+        return rows.length > 0 ? rows[0] : null;
+    }
     static async findLatestActiveBid(userId) {
         const [rows] = await pool.execute(
-            `SELECT id, bid_amount, bid_date
+            `SELECT *
              FROM bids
              WHERE user_id = ? AND bid_status = 'active' AND is_cancelled = false
              ORDER BY bid_date DESC
@@ -70,6 +68,44 @@ class BidModel {
             [bidDate]
         );
         return rows;
+    }
+
+    static async findHistoryByUser(userId,limit,offset) {
+        const [rows] = await pool.execute(
+            `SELECT id, bid_amount, bid_status, bid_date, is_cancelled, sponsorship_total, created_at, updated_at
+             FROM bids WHERE user_id = ?
+             ORDER BY created_at DESC
+             LIMIT ? OFFSET ?`,
+            [userId, limit, offset]
+        );
+        return rows;
+    }
+
+    static async countByUser(userId) {
+        const [rows] = await pool.execute(
+            'SELECT COUNT(*) AS total FROM bids WHERE user_id = ?',
+            [userId]
+        );
+        return rows[0].total;
+    }
+
+    static async getMonthlyCount(userId, year, month) {
+        const [rows] = await pool.execute(
+            `SELECT count, attended_event FROM monthly_feature_count
+             WHERE user_id = ? AND year = ? AND month = ?`,
+            [userId, year, month]
+        );
+        return rows.length > 0 ? rows[0] : null;
+    }
+
+    static async getAvailableSponsorshipBalance(userId) {
+        const [rows] = await pool.execute(
+            `SELECT COALESCE(SUM(offer_amount), 0) AS available_balance
+             FROM sponsorship_offers
+             WHERE user_id = ? AND status = 'accepted' AND is_paid = false`,
+            [userId]
+        );
+        return parseFloat(rows[0].available_balance);
     }
 
     static async updateAmount(bidId, newAmount) {
@@ -113,29 +149,6 @@ class BidModel {
             [bidDate, winnerBidId]
         );
         return result.affectedRows;
-    }
-
-    static async getHistoryByUser(userId, page = 1, limit = 10) {
-        const offset = (page - 1) * limit;
-
-        const [bids] = await pool.execute(
-            `SELECT id, bid_amount, bid_status, bid_date, is_cancelled, created_at, updated_at
-             FROM bids
-             WHERE user_id = ?
-             ORDER BY created_at DESC
-                 LIMIT ? OFFSET ?`,
-            [userId, limit, offset]
-        );
-
-        const [count] = await pool.execute(
-            `SELECT COUNT(*) AS total FROM bids WHERE user_id = ?`,
-            [userId]
-        );
-
-        return {
-            bids,
-            total: count[0].total,
-        };
     }
 }
 

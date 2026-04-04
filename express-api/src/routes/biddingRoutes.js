@@ -1,48 +1,104 @@
-import express from "express";
-import BiddingController from "../services/BiddingService.js";
-
+import express from 'express';
+import { authenticateAny, authenticateInternal } from '../middleware/authMiddleware.js';
+import { biddingLimiter } from '../middleware/rateLimiter.js';
+import {
+    validatePlaceBid,
+    validateUpdateBid,
+    validateCancelBid,
+    validatePagination,
+} from '../middleware/inputValidator.js';
+import BiddingController from "../controllers/biddingController.js";
 
 const router = express.Router();
 
+// ============================================================================
+// WRITE OPERATIONS — Internal auth + bidding rate limiter
+// ============================================================================
+
 /**
- * @openapi
- * /api/bids:
+ * @swagger
+ * /api/v1/bids:
  *   post:
- *     summary: Place a new bid (Blind bidding)
+ *     summary: Place a new bid
+ *     description: >
+ *       Place a blind bid for tomorrow's featured alumni slot.
+ *       The bid amount must not exceed the user's available sponsorship funds.
+ *       Only one bid per user per day is allowed.
+ *       Monthly feature limit (3/month, or 4 with event attendance) is enforced.
  *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [bid_amount, bid_date, user_id]
  *             properties:
  *               bid_amount:
  *                 type: number
- *                 example: 500
+ *                 format: decimal
+ *                 example: 250.00
+ *                 description: Amount to bid (max 2 decimal places)
  *               bid_date:
  *                 type: string
- *                 example: "2026-04-10"
- *               sponsorship_total:
- *                 type: number
- *                 example: 1000
+ *                 format: date
+ *                 example: "2026-04-05"
+ *                 description: Date bidding for (must be tomorrow or later)
+ *               user_id:
+ *                 type: integer
+ *                 example: 5
  *     responses:
- *       200:
- *         description: Bid placed successfully (winning/losing status returned)
+ *       201:
+ *         description: Bid placed successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 id: 1
+ *                 user_id: 5
+ *                 bid_amount: 250.00
+ *                 bid_date: "2026-04-05"
+ *                 bid_status: "active"
+ *                 sponsorship_total: 500.00
+ *       400:
+ *         description: Validation error or insufficient funds
+ *       403:
+ *         description: Monthly feature limit reached
+ *       409:
+ *         description: Duplicate bid for this date
+ *       401:
+ *         description: Authentication required
+ *       429:
+ *         description: Rate limit exceeded
  */
-router.post("/", BiddingController.placeBid);
+router.post(
+    '/',
+    authenticateInternal,
+    biddingLimiter,
+    validatePlaceBid,
+    BiddingController.placeBid
+);
 
 /**
- * @openapi
- * /api/bids/{id}:
+ * @swagger
+ * /api/v1/bids/{id}:
  *   put:
- *     summary: Update bid amount
+ *     summary: Update a bid (increase only)
+ *     description: >
+ *       Update an existing bid amount. The new amount must be strictly
+ *       greater than the current amount (decrease is not allowed).
+ *       Cannot update cancelled or resolved (won/lost) bids.
+ *       New amount must not exceed available sponsorship funds.
  *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Bid ID
  *         schema:
  *           type: integer
  *     requestBody:
@@ -51,99 +107,230 @@ router.post("/", BiddingController.placeBid);
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [bid_amount]
  *             properties:
- *               amount:
+ *               bid_amount:
  *                 type: number
- *                 example: 600
+ *                 example: 300.00
+ *               user_id:
+ *                 type: integer
+ *                 example: 5
  *     responses:
  *       200:
  *         description: Bid updated successfully
+ *       400:
+ *         description: New amount must exceed current, or insufficient funds
+ *       404:
+ *         description: Bid not found
+ *       401:
+ *         description: Authentication required
+ *       429:
+ *         description: Rate limit exceeded
  */
-router.put("/:id", BiddingController.updateBid);
+router.put(
+    '/:id',
+    authenticateInternal,
+    biddingLimiter,
+    validateUpdateBid,
+    BiddingController.updateBid
+);
 
 /**
- * @openapi
- * /api/bids/{id}:
+ * @swagger
+ * /api/v1/bids/{id}:
  *   delete:
  *     summary: Cancel a bid
+ *     description: >
+ *       Cancel an active bid. Sets is_cancelled to true.
+ *       Cannot cancel bids that are already cancelled or resolved (won/lost).
  *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Bid ID
  *         schema:
  *           type: integer
  *     responses:
  *       200:
  *         description: Bid cancelled successfully
+ *       400:
+ *         description: Bid already cancelled or resolved
+ *       404:
+ *         description: Bid not found
+ *       401:
+ *         description: Authentication required
  */
-router.delete("/:id", BiddingController.cancelBid);
+router.delete(
+    '/:id',
+    authenticateInternal,
+    validateCancelBid,
+    BiddingController.cancelBid
+);
+
+// ============================================================================
+// READ OPERATIONS — Any auth (internal or bearer)
+// ============================================================================
 
 /**
- * @openapi
- * /api/bids/history:
+ * @swagger
+ * /api/v1/bids/status:
  *   get:
- *     summary: Get user bid history (paginated)
+ *     summary: Get bid status (winning/not winning)
+ *     description: >
+ *       Returns whether the user's active bid is currently the highest
+ *       for the target date. Does NOT reveal the actual highest bid
+ *       amount — only indicates winning or not winning (blind bidding).
  *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
+ *       - BearerAuth: []
  *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Bid status
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 bid_id: 1
+ *                 bid_date: "2026-04-05"
+ *                 your_bid_amount: 250.00
+ *                 is_winning: true
+ *       404:
+ *         description: No active bid found
+ *       401:
+ *         description: Authentication required
+ */
+router.get(
+    '/status',
+    authenticateAny,
+    BiddingController.getBidStatus
+);
+
+/**
+ * @swagger
+ * /api/v1/bids/history:
+ *   get:
+ *     summary: View bidding history
+ *     description: Paginated bidding history for the user.
+ *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
  *       - in: query
  *         name: page
- *         required: false
  *         schema:
  *           type: integer
- *           example: 1
+ *           default: 1
  *       - in: query
  *         name: limit
- *         required: false
  *         schema:
  *           type: integer
- *           example: 10
+ *           default: 10
+ *           maximum: 100
  *     responses:
  *       200:
- *         description: Bid history retrieved successfully
+ *         description: Paginated bid history
+ *       401:
+ *         description: Authentication required
  */
-router.get("/history", BiddingController.getUserHistory);
+router.get(
+    '/history',
+    authenticateAny,
+    validatePagination,
+    BiddingController.getBidHistory
+);
 
 /**
- * @openapi
- * /api/bids/winner:
- *   post:
- *     summary: Select winning bid for a specific date
- *     tags: [Bidding]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               date:
- *                 type: string
- *                 example: "2026-04-10"
- *     responses:
- *       200:
- *         description: Winner selected successfully
- */
-router.post("/winner", BiddingController.selectWinner);
-
-/**
- * @openapi
- * /api/bids/{id}/status:
+ * @swagger
+ * /api/v1/bids/monthly-limit:
  *   get:
- *     summary: Check if a bid is winning or losing (Blind bidding)
+ *     summary: View monthly feature limit status
+ *     description: >
+ *       Returns how many times the user has been featured this month,
+ *       the maximum allowed (3 or 4 with event), remaining slots,
+ *       and whether they attended an event.
  *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
+ *       - BearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - in: query
+ *         name: user_id
  *         required: true
- *         description: Bid ID
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: Bid status retrieved successfully
+ *         description: Monthly limit status
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 featured_count: 2
+ *                 max_allowed: 3
+ *                 remaining: 1
+ *                 attended_event: false
+ *                 year: 2026
+ *                 month: 4
+ *       401:
+ *         description: Authentication required
  */
-//router.get("/:id/status", BiddingController.);
+router.get(
+    '/monthly-limit',
+    authenticateAny,
+    BiddingController.getMonthlyLimit
+);
+
+/**
+ * @swagger
+ * /api/v1/bids/balance:
+ *   get:
+ *     summary: View available sponsorship balance
+ *     description: >
+ *       Returns the total sponsorship funds available for bidding.
+ *       Calculated as the sum of all accepted, unpaid sponsorship offers.
+ *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Available balance
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               data:
+ *                 available_balance: 500.00
+ *       401:
+ *         description: Authentication required
+ */
+router.get(
+    '/balance',
+    authenticateAny,
+    BiddingController.getAvailableBalance
+);
 
 export default router;
