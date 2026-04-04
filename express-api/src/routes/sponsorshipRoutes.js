@@ -1,13 +1,13 @@
 import express from 'express';
 
-import { authMiddleware } from "../middleware/authMiddleware.js";
-import { apiLimiter } from "../middleware/rateLimiter.js";
+import { authenticateAny } from "../middleware/authMiddleware.js";
+import { generalLimiter } from "../middleware/rateLimiter.js";
 import SponsorshipController from "../controllers/sponsorshipController.js";
 
 const router = express.Router();
 
-router.use(authMiddleware);
-router.use(apiLimiter);
+router.use(authenticateAny);
+router.use(generalLimiter);
 
 
 /**

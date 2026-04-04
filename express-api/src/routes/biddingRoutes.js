@@ -103,7 +103,7 @@ router.delete("/:id", BiddingController.cancelBid);
  *       200:
  *         description: Bid history retrieved successfully
  */
-router.get("/history", BiddingController.history);
+router.get("/history", BiddingController.getUserHistory);
 
 /**
  * @openapi
@@ -144,6 +144,6 @@ router.post("/winner", BiddingController.selectWinner);
  *       200:
  *         description: Bid status retrieved successfully
  */
-router.get("/:id/status", BiddingController.checkStatus);
+//router.get("/:id/status", BiddingController.);
 
 export default router;

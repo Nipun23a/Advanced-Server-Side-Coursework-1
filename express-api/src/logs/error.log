@@ -20,3 +20,16 @@
 {"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-04 13:12:12"}
 {"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-04 13:24:24"}
 {"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-04 13:27:59"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"Starting cron jobs...","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"CRON: Daily winner selection scheduled — 6:00 PM Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"CRON: Monthly cleanup scheduled — midnight 1st of each month Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"  Alumni Influencers API Server Started","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"  Port:        3000","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"  Environment: development","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"  Swagger:     http://localhost:3000/api-docs","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"  Health:      http://localhost:3000/api/v1/health","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-04 18:14:00"}

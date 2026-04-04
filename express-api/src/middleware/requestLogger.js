@@ -1,7 +1,7 @@
 import {pool} from "../config/database.js";
 import {logger} from "../config/logger.js";
 
-const requestLogger = (req, res, next) => {
+export const requestLogger = (req, res, next) => {
     const startTime = Date.now();
     res.on('finish', () => {
         const responseTime = Date.now() - startTime;
