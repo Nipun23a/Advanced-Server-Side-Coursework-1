@@ -38,12 +38,31 @@ class SponsorModel {
             'INSERT INTO sponsors (sponsor_name, sponsor_type, website_url) VALUES (?, ?, ?)',
             [sponsor_name, sponsor_type, website_url]
         );
-        return {
-            id: result.insertId,
-            sponsor_name,
-            sponsor_type,
-            website_url,
-        };
+        return result;
+    }
+
+    static async countAll(sponsorType = null) {
+        if (sponsorType) {
+            const [rows] = await pool.execute(
+                'SELECT COUNT(*) AS total FROM sponsors WHERE sponsor_type = ?',
+                [sponsorType]
+            );
+            return rows[0].total;
+        }
+        const [rows] = await pool.execute(
+            'SELECT COUNT(*) AS total FROM sponsors'
+        );
+        return rows[0].total;
+    }
+
+    static async update(sponsorId, data) {
+        const { sponsor_name, sponsor_type, website_url } = data;
+        const [result] = await pool.execute(
+            `UPDATE sponsors SET sponsor_name = ?, sponsor_type = ?, website_url = ?
+             WHERE id = ?`,
+            [sponsor_name, sponsor_type, website_url, sponsorId]
+        );
+        return result.affectedRows > 0;
     }
 
 }
