@@ -21,7 +21,7 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [user_id,sponsor_name, sponsor_type, website_url]
+ *             required: [sponsor_name, sponsor_type, website_url]
  *             properties:
  *               sponsor_name:
  *                 type: string
@@ -92,12 +92,12 @@ router.get('/sponsors', authenticateInternal, SponsorshipController.listSponsors
  *         application/json:
  *           schema:
  *             type: object
- *             required: [sponsor_id, user_id, sponsorable_id, sponsorable_type, offer_amount]
+ *             required: [sponsor_id, alumni_id, sponsorable_id, sponsorable_type, offer_amount]
  *             properties:
  *               sponsor_id:
  *                 type: integer
  *                 example: 1
- *               user_id:
+ *               alumni_id:
  *                 type: integer
  *                 example: 5
  *               sponsorable_id:
@@ -134,7 +134,7 @@ router.post('/offers', authenticateInternal, SponsorshipController.createOffer);
  *       - InternalAuth: []
  *     parameters:
  *       - in: query
- *         name: user_id
+ *         name: alumni_id
  *         required: true
  *         schema:
  *           type: integer
@@ -182,7 +182,7 @@ router.get('/offers', authenticateInternal, SponsorshipController.getOffers);
  *                 type: string
  *                 enum: [accept, decline]
  *                 example: "accept"
- *               user_id:
+ *               alumni_id:
  *                 type: integer
  *                 example: 5
  *     responses:
@@ -226,7 +226,7 @@ router.put(
  *       - InternalAuth: []
  *     parameters:
  *       - in: query
- *         name: user_id
+ *         name: alumni_id
  *         required: true
  *         schema:
  *           type: integer
@@ -258,7 +258,7 @@ router.get('/balance', authenticateInternal, SponsorshipController.getBalance);
  *       - InternalAuth: []
  *     parameters:
  *       - in: query
- *         name: user_id
+ *         name: alumni_id
  *         required: true
  *         schema:
  *           type: integer

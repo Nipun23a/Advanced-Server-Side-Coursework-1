@@ -46,11 +46,15 @@ class SponsorshipController {
     }
     static async createOffer(req, res) {
         try {
-            const { sponsor_id, user_id, sponsorable_id, sponsorable_type, offer_amount } = req.body;
+            const { sponsor_id, alumni_id, sponsorable_id, sponsorable_type, offer_amount } = req.body;
+
+            if (!alumni_id) {
+                return sendError(res, 'MISSING_ALUMNI_ID', 'Alumni ID is required.', 400);
+            }
 
             const result = await SponsorshipService.createOffer({
                 sponsor_id,
-                user_id,
+                alumni_id,
                 sponsorable_id,
                 sponsorable_type,
                 offer_amount: parseFloat(offer_amount),
@@ -73,18 +77,18 @@ class SponsorshipController {
     }
     static async getOffers(req, res) {
         try {
-            const userId = parseInt(req.query.user_id) || req.internalUserId;
+            const alumniId = parseInt(req.query.alumni_id);
             const status = req.query.status || null;
 
-            if (!userId) {
-                return sendError(res, 'MISSING_USER_ID', 'User ID is required.', 400);
+            if (!alumniId) {
+                return sendError(res, 'MISSING_ALUMNI_ID', 'Alumni ID is required.', 400);
             }
 
             let result;
             if (status) {
-                result = await SponsorshipService.getOffersByStatus(userId, status);
+                result = await SponsorshipService.getOffersByStatus(alumniId, status);
             } else {
-                result = await SponsorshipService.getOffers(userId);
+                result = await SponsorshipService.getOffers(alumniId);
             }
 
             return sendSuccess(res, result, 'Sponsorship offers retrieved.');
@@ -100,14 +104,14 @@ class SponsorshipController {
     static async respondToOffer(req, res) {
         try {
             const offerId = parseInt(req.params.id);
-            const { action, user_id } = req.body;
-            const userId = user_id || req.internalUserId;
+            const { action, alumni_id } = req.body;
+            const alumniId = parseInt(alumni_id);
 
-            if (!userId) {
-                return sendError(res, 'MISSING_USER_ID', 'User ID is required.', 400);
+            if (!alumniId) {
+                return sendError(res, 'MISSING_ALUMNI_ID', 'Alumni ID is required.', 400);
             }
 
-            const result = await SponsorshipService.respondToOffer(offerId, userId, action);
+            const result = await SponsorshipService.respondToOffer(offerId, alumniId, action);
 
             return sendSuccess(res, result, `Offer ${action}ed successfully.`);
 
@@ -127,13 +131,13 @@ class SponsorshipController {
     }
     static async getBalance(req, res) {
         try {
-            const userId = parseInt(req.query.user_id) || req.internalUserId;
+            const alumniId = parseInt(req.query.alumni_id);
 
-            if (!userId) {
-                return sendError(res, 'MISSING_USER_ID', 'User ID is required.', 400);
+            if (!alumniId) {
+                return sendError(res, 'MISSING_ALUMNI_ID', 'Alumni ID is required.', 400);
             }
 
-            const result = await SponsorshipService.getBalance(userId);
+            const result = await SponsorshipService.getBalance(alumniId);
 
             return sendSuccess(res, result, 'Sponsorship balance retrieved.');
 
@@ -147,13 +151,13 @@ class SponsorshipController {
     }
     static async getOfferSummary(req, res) {
         try {
-            const userId = parseInt(req.query.user_id) || req.internalUserId;
+            const alumniId = parseInt(req.query.alumni_id);
 
-            if (!userId) {
-                return sendError(res, 'MISSING_USER_ID', 'User ID is required.', 400);
+            if (!alumniId) {
+                return sendError(res, 'MISSING_ALUMNI_ID', 'Alumni ID is required.', 400);
             }
 
-            const result = await SponsorshipService.getOfferSummary(userId);
+            const result = await SponsorshipService.getOfferSummary(alumniId);
 
             return sendSuccess(res, result, 'Offer summary retrieved.');
 

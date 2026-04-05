@@ -102,6 +102,10 @@ export const validateSponsorshipResponse = [
       .exists().withMessage('Action is required.')
       .isIn(['accept', 'decline']).withMessage('Action must be either "accept" or "decline".'),
 
+  body('alumni_id')
+      .optional()
+      .isInt({ min: 1 }).withMessage('Alumni ID must be a positive integer.'),
+
   handleValidationErrors,
 ];
 

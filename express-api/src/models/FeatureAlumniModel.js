@@ -73,30 +73,34 @@ class FeatureAlumniModel {
     }
 
     static async findHistory(limit, offset) {
-        const [rows] = await pool.execute(
+        const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 10;
+        const safeOffset = Number.isInteger(offset) && offset >= 0 ? offset : 0;
+
+        const [rows] = await pool.query(
             `SELECT fa.featured_at, u.email,
                     ap.bio, ap.linkedin_url, ap.profile_image_url
              FROM featured_alumni fa
              JOIN users u ON fa.user_id = u.id
              LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
              ORDER BY fa.featured_at DESC
-              LIMIT ?, ?`,
-            [offset, limit]
+              LIMIT ${safeOffset}, ${safeLimit}`
 
         );
         return rows;
     }
 
     static async findWinnersHistory(limit, offset) {
-        const [rows] = await pool.execute(
+        const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 10;
+        const safeOffset = Number.isInteger(offset) && offset >= 0 ? offset : 0;
+
+        const [rows] = await pool.query(
             `SELECT fa.featured_at, fa.user_id, fa.bid_id,
                     b.bid_amount, u.email
              FROM featured_alumni fa
              JOIN bids b ON fa.bid_id = b.id
              JOIN users u ON fa.user_id = u.id
              ORDER BY fa.featured_at DESC
-              LIMIT ?, ?`,
-            [offset, limit]
+              LIMIT ${safeOffset}, ${safeLimit}`
 
         );
         return rows;
@@ -122,7 +126,7 @@ class FeatureAlumniModel {
 
     static async getMonthlyCount(userId, year, month, connection) {
         const [rows] = await connection.execute(
-            `SELECT count, attended_event FROM monthly_feature_count
+            `SELECT count, attended_event FROM monthly_feature_counts
              WHERE user_id = ? AND year = ? AND month = ?`,
             [userId, year, month]
         );
@@ -147,7 +151,7 @@ class FeatureAlumniModel {
 
     static async incrementMonthlyCount(userId, year, month, connection) {
         await connection.execute(
-            `INSERT INTO monthly_feature_count (user_id, year, month, count, attended_event)
+            `INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event)
              VALUES (?, ?, ?, 1, false)
              ON DUPLICATE KEY UPDATE count = count + 1`,
             [userId, year, month]
@@ -158,7 +162,8 @@ class FeatureAlumniModel {
         const [result] = await connection.execute(
             `UPDATE sponsorship_offers
              SET is_paid = true, status = 'paid', updated_at = NOW()
-             WHERE user_id = ? AND status = 'accepted' AND is_paid = false`,
+             WHERE alumni_id = (SELECT id FROM alumni_profiles WHERE user_id = ? LIMIT 1)
+             AND status = 'accepted' AND is_paid = false`,
             [userId]
         );
         return result.affectedRows;

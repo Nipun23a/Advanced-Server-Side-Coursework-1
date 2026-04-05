@@ -70,13 +70,16 @@ class BidModel {
         return rows;
     }
 
-    static async findHistoryByUser(userId,limit,offset) {
-        const [rows] = await pool.execute(
+    static async findHistoryByUser(userId, limit, offset) {
+        const safeLimit = Number.isInteger(limit) && limit > 0 ? limit : 10;
+        const safeOffset = Number.isInteger(offset) && offset >= 0 ? offset : 0;
+
+        const [rows] = await pool.query(
             `SELECT id, bid_amount, bid_status, bid_date, is_cancelled, created_at, updated_at
              FROM bids WHERE user_id = ?
              ORDER BY created_at DESC
-             LIMIT ? OFFSET ?`,
-            [userId, limit, offset]
+             LIMIT ${safeOffset}, ${safeLimit}`,
+            [userId]
         );
         return rows;
     }

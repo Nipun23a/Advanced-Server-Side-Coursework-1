@@ -1,6 +1,15 @@
 import { pool } from '../config/database.js';
 
 class SponsorshipOfferModel {
+    static async findAlumniProfileById(alumniId) {
+        const [rows] = await pool.execute(
+            'SELECT id FROM alumni_profiles WHERE id = ? LIMIT 1',
+            [alumniId]
+        );
+
+        return rows.length > 0 ? rows[0] : null;
+    }
+
     static async findAlumniProfileIdByUserId(userId) {
         const [rows] = await pool.execute(
             'SELECT id FROM alumni_profiles WHERE user_id = ? LIMIT 1',
