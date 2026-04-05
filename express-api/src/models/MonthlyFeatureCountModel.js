@@ -3,7 +3,7 @@ import{pool} from "../config/database.js";
 class MonthlyFeatureCountModel {
     static async findByUserAndMonth(userId, year, month) {
         const [rows] = await pool.execute(
-            'SELECT count,attendent_event FROM monthly_feature_count WHERE user_id = ? AND year = ? AND month = ?',
+            'SELECT count, attended_event FROM monthly_feature_counts WHERE user_id = ? AND year = ? AND month = ?',
             [userId, year, month]
         );
         return rows.length > 0 ? rows[0] : null;
@@ -26,8 +26,8 @@ class MonthlyFeatureCountModel {
     static async increamentCount(userId, year, month, connection = null) {
         const db = connection || pool;
         const [result] = await db.execute(
-            `INSERT INTO monthly_feature_count (user_id, year, month, count,attendent_event)
-             VALUES (?, ?, ?, 1,0)
+            `INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event)
+             VALUES (?, ?, ?, 1, false)
              ON DUPLICATE KEY UPDATE count = count + 1`,
             [userId, year, month]
         );
@@ -36,7 +36,7 @@ class MonthlyFeatureCountModel {
 
     static async markEventAttended(userId, year, month, connection = null){
         const [result] = await (connection || pool).execute(
-            'INSERT INTO monthly_feature_count (user_id, year, month, count,attendent_event) VALUES (?, ?, ?, 0,true) ON DUPLICATE KEY UPDATE attendent_event = true',
+            'INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event) VALUES (?, ?, ?, 0, true) ON DUPLICATE KEY UPDATE attended_event = true',
             [userId, year, month]
         );
         return result.affectedRows > 0;
