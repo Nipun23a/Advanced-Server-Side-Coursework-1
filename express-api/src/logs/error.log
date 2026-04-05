@@ -995,3 +995,17 @@
 {"apiKeyId":null,"authType":"internal","ip":"::1","level":"http","message":"API Request","method":"GET","responseTime":"4ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 18:31:08","url":"/api/v1/sponsorships/offers?alumni_id=1","userAgent":"unknown"}
 {"apiKeyId":null,"authType":"internal","ip":"::1","level":"http","message":"API Request","method":"GET","responseTime":"3ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 18:31:08","url":"/api/v1/sponsorships/balance?alumni_id=1","userAgent":"unknown"}
 {"apiKeyId":null,"authType":"internal","ip":"::1","level":"http","message":"API Request","method":"GET","responseTime":"3ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 18:31:08","url":"/api/v1/sponsorships/summary?alumni_id=1","userAgent":"unknown"}
+{"level":"info","message":"SIGINT received. Shutting down gracefully...","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:21"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"Starting cron jobs...","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"CRON: Daily winner selection scheduled — 6:00 PM Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"CRON: Monthly cleanup scheduled — midnight 1st of each month Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"  Alumni Influencers API Server Started","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"  Port:        3000","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"  Environment: development","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"  Swagger:     http://localhost:3000/api-docs","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"  Health:      http://localhost:3000/api/v1/health","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 18:40:24"}

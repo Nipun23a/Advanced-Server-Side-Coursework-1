@@ -51,24 +51,29 @@ class ProfileController extends BaseController
     {
         $userId = (int) session()->get('user_id');
 
-        $rules = [
-            'bio' => 'permit_empty|max_length[5000]',
-            'linkedin_url' => 'permit_empty|valid_url_strict',
-            'profile_image_url' => 'permit_empty|valid_url_strict|max_length[256]',
-            'profile_image' => 'permit_empty|is_image[profile_image]|max_size[profile_image,2048]|ext_in[profile_image,jpg,jpeg,png,gif,webp]',
-        ];
+        $rules = $this->getProfileRules();
 
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('validation', $this->validator);
         }
 
+        $uploadedImage = $this->request->getFile('profile_image');
+        if ($uploadedImage && $uploadedImage->getError() !== UPLOAD_ERR_NO_FILE) {
+            $fileRules = [
+                'profile_image' => 'is_image[profile_image]|mime_in[profile_image,image/jpg,image/jpeg,image/png,image/gif,image/webp]|max_size[profile_image,2048]|ext_in[profile_image,jpg,jpeg,png,gif,webp]',
+            ];
+
+            if (! $this->validate($fileRules)) {
+                return redirect()->back()->withInput()->with('validation', $this->validator);
+            }
+        }
+
         $data = [
-            'bio' => trim((string) $this->request->getPost('bio')),
-            'linkedin_url' => trim((string) $this->request->getPost('linkedin_url')),
-            'profile_image_url' => trim((string) $this->request->getPost('profile_image_url')),
+            'bio' => $this->sanitizeText($this->request->getPost('bio'), 5000),
+            'linkedin_url' => $this->sanitizeUrl($this->request->getPost('linkedin_url')),
+            'profile_image_url' => $this->sanitizeUrl($this->request->getPost('profile_image_url')),
         ];
 
-        $uploadedImage = $this->request->getFile('profile_image');
         if ($uploadedImage && $uploadedImage->isValid() && ! $uploadedImage->hasMoved()) {
             $uploadDirectory = FCPATH . 'uploads/profiles';
             if (! is_dir($uploadDirectory)) {
@@ -100,7 +105,7 @@ class ProfileController extends BaseController
         return $this->saveProfileSection(
             $this->degreeModel,
             [
-                'degree_name' => 'required|max_length[100]',
+                'degree_name' => 'required|max_length[100]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
                 'institution_url' => 'required|valid_url_strict|max_length[256]',
                 'completion_date' => 'required|valid_date[Y-m-d]',
             ],
@@ -119,8 +124,8 @@ class ProfileController extends BaseController
         return $this->saveProfileSection(
             $this->certificateModel,
             [
-                'certificate_name' => 'required|max_length[100]',
-                'issuer_name' => 'required|max_length[256]',
+                'certificate_name' => 'required|max_length[100]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
+                'issuer_name' => 'required|max_length[256]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
                 'completion_date' => 'required|valid_date[Y-m-d]',
             ],
             ['certificate_name', 'issuer_name', 'completion_date'],
@@ -138,7 +143,7 @@ class ProfileController extends BaseController
         return $this->saveProfileSection(
             $this->licenseModel,
             [
-                'license_name' => 'required|max_length[100]',
+                'license_name' => 'required|max_length[100]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
                 'license_url' => 'required|valid_url_strict|max_length[256]',
                 'completion_date' => 'required|valid_date[Y-m-d]',
                 'expiration_date' => 'permit_empty|valid_date[Y-m-d]',
@@ -158,7 +163,7 @@ class ProfileController extends BaseController
         return $this->saveProfileSection(
             $this->courseModel,
             [
-                'course_name' => 'required|max_length[100]',
+                'course_name' => 'required|max_length[100]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
                 'provider_url' => 'required|valid_url_strict|max_length[256]',
                 'completion_date' => 'required|valid_date[Y-m-d]',
             ],
@@ -177,8 +182,8 @@ class ProfileController extends BaseController
         return $this->saveProfileSection(
             $this->employmentModel,
             [
-                'company_name' => 'required|max_length[100]',
-                'job_title' => 'required|max_length[100]',
+                'company_name' => 'required|max_length[100]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
+                'job_title' => 'required|max_length[100]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
                 'start_date' => 'required|valid_date[Y-m-d]',
                 'end_date' => 'permit_empty|valid_date[Y-m-d]',
             ],
@@ -220,7 +225,12 @@ class ProfileController extends BaseController
 
         foreach ($fields as $field) {
             $value = $this->request->getPost($field);
-            $data[$field] = is_string($value) ? trim($value) : $value;
+            $data[$field] = $this->sanitizeFieldValue($field, $value);
+        }
+
+        $dateValidationError = $this->validateDateRanges($data);
+        if ($dateValidationError !== null) {
+            return redirect()->back()->withInput()->with('error', $dateValidationError);
         }
 
         if ($recordId > 0) {
@@ -251,5 +261,57 @@ class ProfileController extends BaseController
 
         $model->delete($id);
         return redirect()->to('/profile')->with('success', $successMessage);
+    }
+
+    protected function getProfileRules(): array
+    {
+        return [
+            'bio' => 'permit_empty|max_length[5000]',
+            'linkedin_url' => 'permit_empty|valid_url_strict|max_length[255]|regex_match[/^https:\\/\\/(www\\.)?linkedin\\.com\\//i]',
+            'profile_image_url' => 'permit_empty|valid_url_strict|max_length[256]',
+        ];
+    }
+
+    protected function sanitizeFieldValue(string $field, mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return match ($field) {
+            'institution_url', 'license_url', 'provider_url' => $this->sanitizeUrl($value),
+            'completion_date', 'expiration_date', 'start_date', 'end_date' => trim($value),
+            default => $this->sanitizeText($value, 256),
+        };
+    }
+
+    protected function sanitizeText(?string $value, int $maxLength): string
+    {
+        $cleaned = trim(strip_tags((string) $value));
+        if ($cleaned === '') {
+            return '';
+        }
+
+        return mb_substr($cleaned, 0, $maxLength);
+    }
+
+    protected function sanitizeUrl(?string $value): string
+    {
+        return trim((string) $value);
+    }
+
+    protected function validateDateRanges(array $data): ?string
+    {
+        if (! empty($data['completion_date']) && ! empty($data['expiration_date'])
+            && strtotime($data['expiration_date']) < strtotime($data['completion_date'])) {
+            return 'Expiration date must be on or after the completion date.';
+        }
+
+        if (! empty($data['start_date']) && ! empty($data['end_date'])
+            && strtotime($data['end_date']) < strtotime($data['start_date'])) {
+            return 'Employment end date must be on or after the start date.';
+        }
+
+        return null;
     }
 }

@@ -37,6 +37,9 @@ class AuthController extends BaseController
     }
 
     public function register() {
+        $email = strtolower(trim((string) $this->request->getPost('email')));
+        $password = (string) $this->request->getPost('password');
+
         $rules = [
             'email' => [
                 'label' => 'Email',
@@ -69,9 +72,6 @@ class AuthController extends BaseController
                 -> with('validation',$this->validator);
         }
 
-        $email = $this -> request -> getPost('email');
-        $password = $this -> request -> getPost('password');
-
         $allowedDomains = [
             'eastminster.ac.uk',
             'student.eastminster.ac.uk',
@@ -84,7 +84,7 @@ class AuthController extends BaseController
                 -> with('error', 'Registration is restricted to University of Eastminster email addresses.');
         }
 
-        $passwordErrors = $this -> validatePasswordStength($password);
+        $passwordErrors = $this -> validatePasswordStrength($password);
         if (!empty($passwordErrors)){
             return redirect() -> back() -> withInput()
                 -> with('error',implode(' ',$passwordErrors));
@@ -92,7 +92,7 @@ class AuthController extends BaseController
 
         $passwordHash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
         $userId = $this -> userModel->insert([
-            'email' => strtolower(trim($email)),
+            'email' => $email,
             'password_hash' => $passwordHash,
             'is_email_verified' => false,
             'role' => 'alumni'
@@ -110,7 +110,7 @@ class AuthController extends BaseController
             -> with ('success', 'Registration successful! Please check your email to verify your account.');
     }
 
-    public function validatePasswordStength(string $password) : array
+    public function validatePasswordStrength(string $password) : array
     {
         $errors = [];
         if (strlen($password) < 8){
@@ -125,9 +125,6 @@ class AuthController extends BaseController
         if (!preg_match('/[0-9]/', $password)){
             $errors[] = 'Password must contain at least one number.';
         }
-        if (!preg_match('/[!@#$%^&*()\-_=+{};:,<.>]/', $password)){
-            $errors[] = 'Password must contain at least one special character.';
-        }
         if (! preg_match('/[!@#$%^&*()_+\-=\[\]{};\':\"\\|,.<>\/?]/', $password)) {
             $errors[] = 'Password must contain at least one special character.';
         }
@@ -141,8 +138,8 @@ class AuthController extends BaseController
 
     public function verifyEmail()
     {
-        $rawToken = $this -> request -> getGet('token');
-        if (empty($rawToken)){
+        $rawToken = trim((string) $this->request->getGet('token'));
+        if (! $this->isValidHexToken($rawToken)){
             return redirect() -> to('/auth/login')
                 -> with('error', 'Invalid verification link.');
         }
@@ -154,7 +151,6 @@ class AuthController extends BaseController
         }
         $this -> userModel -> markEmailVerified($tokenRecord['user_id']);
         $this -> emailTokenModel -> markAsUsed($tokenRecord['id']);
-        $this -> resetTokenModel -> invalidateUserToken($tokenRecord['user_id']);
         return redirect() -> to('/auth/login')
             -> with('success', 'Email verified successfully ! You can now log in.');
 
@@ -162,7 +158,7 @@ class AuthController extends BaseController
 
     public function resendVerification()
     {
-        $email = $this -> request -> getPost('email');
+        $email = strtolower(trim((string) $this->request->getPost('email')));
         if (empty($email)){
             return redirect() -> back() -> with('error','Please enter your email address.');
         }
@@ -206,17 +202,16 @@ class AuthController extends BaseController
                 -> withInput()
                 -> with('validation',$this->validator);
         }
-        $email = $this -> request -> getPost('email');
-        $password = $this -> request -> getPost('password');
+        $email = strtolower(trim((string) $this->request->getPost('email')));
+        $password = (string) $this->request->getPost('password');
 
-        $user = $this -> userModel -> findByEmail(strtolower(trim($email)));
+        $user = $this -> userModel -> findByEmail($email);
         if (! $user || !password_verify($password, $user['password_hash'])){
             return redirect()->back() -> withInput() -> with('error','Invalid email or password.');
         }
 
         if (!$user['is_email_verified']){
-            return redirect() -> back() -> withInput() -> with('error','Please verify your email address to access before logging in.')
-                ->with('error','Please verify your email address to access before logging in.')
+            return redirect() -> back() -> withInput() -> with('error','Please verify your email address before logging in.')
                 -> with('show_resend',true);
         }
 
@@ -260,8 +255,8 @@ class AuthController extends BaseController
                 -> with('validation',$this->validator);
         }
 
-        $email = $this -> request -> getPost('email');
-        $user = $this -> userModel -> findByEmail(strtolower(trim($email)));
+        $email = strtolower(trim((string) $this->request->getPost('email')));
+        $user = $this -> userModel -> findByEmail($email);
 
         if ($user){
             $rawToken = $this -> resetTokenModel -> createToken($user['id']);
@@ -273,8 +268,8 @@ class AuthController extends BaseController
 
     public function showResetPassword()
     {
-        $rawToken = $this -> request -> getGet('token');
-        if (empty($rawToken)){
+        $rawToken = trim((string) $this->request->getGet('token'));
+        if (! $this->isValidHexToken($rawToken)){
             return redirect() -> to('/auth/forgot-password')
                 ->with('error','Password reset link is invalid or has expired. Please request a new password reset link.');
         }
@@ -306,10 +301,15 @@ class AuthController extends BaseController
                 -> with('validation',$this->validator);
         }
 
-        $rawToken = $this -> request -> getPost('token');
+        $rawToken = trim((string) $this->request->getPost('token'));
         $password = $this->request->getPost('password');
 
-        $passwordErrors = $this->validatePasswordStength($password);
+        if (! $this->isValidHexToken($rawToken)) {
+            return redirect() -> to('/auth/forgot-password')
+                ->with('error','Password reset link is invalid or has expired. Please request a new password reset link.');
+        }
+
+        $passwordErrors = $this->validatePasswordStrength($password);
         if (! empty($passwordErrors)){
             return redirect() -> back() -> withInput() -> with('error',implode(' ',$passwordErrors));
         }
@@ -327,6 +327,11 @@ class AuthController extends BaseController
 
 
         return redirect() -> to('/auth/login') -> with('success','Password reset successful. Please log in with your new password.');
+    }
+
+    protected function isValidHexToken(?string $token): bool
+    {
+        return ! empty($token) && strlen($token) >= 64 && ctype_xdigit($token);
     }
 
 }
