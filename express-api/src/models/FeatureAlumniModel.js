@@ -115,8 +115,9 @@ class FeatureAlumniModel {
 
     static async findCandidateBids(bidDate, connection) {
         const [rows] = await connection.execute(
-            `SELECT b.id, b.user_id, b.bid_amount, b.created_at
+            `SELECT b.id, b.user_id, b.bid_amount, b.created_at, u.email
              FROM bids b
+             JOIN users u ON b.user_id = u.id
              WHERE b.bid_date = ? AND b.bid_status = 'active' AND b.is_cancelled = false
              ORDER BY b.bid_amount DESC, b.created_at ASC`,
             [bidDate]

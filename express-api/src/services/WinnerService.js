@@ -5,6 +5,7 @@ import FeatureAlumniModel from "../models/FeatureAlumniModel.js";
 import MonthlyFeatureCountModel from "../models/MonthlyFeatureCountModel.js";
 import SponsorshipOfferModel from "../models/SponsorshipOfferModel.js";
 import FeaturedAlumniModel from "../models/FeatureAlumniModel.js";
+import NotificationService from "./NotificationService.js";
 
 class WinnerService {
 
@@ -70,6 +71,7 @@ class WinnerService {
                 connection.release();
                 return null;
             }
+            const losingCandidates = candidates.filter((candidate) => candidate.id !== winner.id);
 
             await FeaturedAlumniModel.markBidAsWon(winner.id, connection);
 
@@ -86,6 +88,20 @@ class WinnerService {
             logger.info(`Winner selection: ${sponsorshipsPaid} sponsorship offer(s) marked as paid`);
             await connection.commit();
 
+            let notificationSummary = null;
+            try {
+                notificationSummary = await NotificationService.sendWinnerSelectionNotifications({
+                    winner,
+                    losers: losingCandidates,
+                    featuredDate: tomorrowStr,
+                });
+            } catch (notificationError) {
+                logger.error('Winner selection: notification send failed after commit', {
+                    message: notificationError.message,
+                    stack: notificationError.stack,
+                });
+            }
+
             logger.info(
                 `Winner selection: COMPLETE for ${tomorrowStr} — ` +
                 `user_id=${winner.user_id}, bid_id=${winner.id}, amount=${winner.bid_amount}`
@@ -98,6 +114,7 @@ class WinnerService {
                 featured_date: tomorrowStr,
                 losers_count: losersCount,
                 sponsorships_paid: sponsorshipsPaid,
+                notifications: notificationSummary,
             };
         }catch (error){
             await connection.rollback();

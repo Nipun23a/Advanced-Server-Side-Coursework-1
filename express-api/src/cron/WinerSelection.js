@@ -25,7 +25,12 @@ const startCronJobs = () => {
                     `sponsorships_paid=${result.sponsorships_paid}`
                 );
 
-                logger.info('CRON: Notification emails would be sent here (TODO: implement NotificationService)');
+                if (result.notifications) {
+                    logger.info(
+                        `CRON: Notifications â€” attempted=${result.notifications.attempted}, ` +
+                        `sent=${result.notifications.sent}, failed=${result.notifications.failed}`
+                    );
+                }
 
             }else{
                 logger.info('CRON: No winner selected — no eligible bids found.');
