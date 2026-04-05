@@ -15,6 +15,7 @@ class CreateSponsorshipOffersTable extends Migration
             'sponsorable_id' => ['type' =>'INT','constraint' => 10, 'unsigned' => true],
             'sponsorable_type' => ['type' =>'ENUM','constraint' => ['certificate','license','professional_course']],
             'offer_amount' => ['type' =>'DECIMAL','constraint' => '10,2'],
+            'remaining_amount' => ['type' =>'DECIMAL','constraint' => '10,2'],
             'status' => ['type' =>'ENUM','constraint' => ['pending','accepted','declined','paid'],'default' => 'pending'],
             'is_paid' => ['type' =>'BOOLEAN','default' => false],
             'created_at DATETIME default current_timestamp',

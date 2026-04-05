@@ -130,7 +130,8 @@ class BiddingService {
                 throw error;
             }
         }
-        const availableBalance = await BidModel.getAvailableSponsorshipBalance(userId);
+        const balance = await BidModel.getAvailableSponsorshipBalance(userId);
+        const availableBalance = balance.available_balance;
 
         if (bidAmount > availableBalance) {
             const error = new Error(
@@ -195,7 +196,8 @@ class BiddingService {
             error.status = 400;
             throw error;
         }
-        const availableBalance = await BidModel.getAvailableSponsorshipBalance(userId);
+        const balance = await BidModel.getAvailableSponsorshipBalance(userId, bidId);
+        const availableBalance = balance.available_balance;
         if (newAmount > availableBalance) {
             const error = new Error(
                 `Insufficient sponsorship funds. Available: ${availableBalance.toFixed(2)}, Requested: ${newAmount.toFixed(2)}`
@@ -328,10 +330,7 @@ class BiddingService {
     }
 
     static async getAvailableBalance(userId) {
-        const balance = await BidModel.getAvailableSponsorshipBalance(userId);
-        return {
-            available_balance: balance,
-        };
+        return await BidModel.getAvailableSponsorshipBalance(userId);
     }
 
 }

@@ -82,10 +82,13 @@ class WinnerService {
 
             await FeaturedAlumniModel.create(winner.user_id, winner.id, tomorrowStr, connection);
             await FeaturedAlumniModel.incrementMonthlyCount(winner.user_id, year, month, connection);
-            const sponsorshipsPaid = await FeaturedAlumniModel.markSponsorshipsPaid(
+            const winnerAlumniId = await FeaturedAlumniModel.findAlumniProfileIdByUserId(
                 winner.user_id, connection
             );
-            logger.info(`Winner selection: ${sponsorshipsPaid} sponsorship offer(s) marked as paid`);
+            const sponsorshipsPaid = await SponsorshipOfferModel.consumeBalanceForWinningBid(
+                winnerAlumniId, winner.bid_amount, connection
+            );
+            logger.info(`Winner selection: ${sponsorshipsPaid} sponsorship offer(s) updated for bid deduction`);
             await connection.commit();
 
             let notificationSummary = null;

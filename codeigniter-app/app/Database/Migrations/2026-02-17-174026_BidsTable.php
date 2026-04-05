@@ -12,7 +12,7 @@ class BidsTable extends Migration
             'id' => ['type' =>'INT','constraint' => 10, 'unsigned' => true, 'auto_increment' => true],
             'user_id' => ['type' =>'INT','constraint' => 10, 'unsigned' => true],
             'bid_amount' => ['type' =>'DECIMAL','constraint' => '10,2'],
-            'bid_status' => ['type' =>'ENUM("active","won","lost")','default' => 'active'],
+            'bid_status' => ['type' =>'ENUM("active","won","lost","cancelled")','default' => 'active'],
             'bid_date' => ['type' =>'DATETIME'],
             'is_cancelled' => ['type' =>'BOOLEAN','default' => false],
             'created_at DATETIME default current_timestamp',

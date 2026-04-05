@@ -159,15 +159,12 @@ class FeatureAlumniModel {
         );
     }
 
-    static async markSponsorshipsPaid(userId, connection) {
-        const [result] = await connection.execute(
-            `UPDATE sponsorship_offers
-             SET is_paid = true, status = 'paid', updated_at = NOW()
-             WHERE alumni_id = (SELECT id FROM alumni_profiles WHERE user_id = ? LIMIT 1)
-             AND status = 'accepted' AND is_paid = false`,
+    static async findAlumniProfileIdByUserId(userId, connection) {
+        const [rows] = await connection.execute(
+            'SELECT id FROM alumni_profiles WHERE user_id = ? LIMIT 1',
             [userId]
         );
-        return result.affectedRows;
+        return rows.length > 0 ? rows[0].id : null;
     }
 
     static async existsByDate(date) {

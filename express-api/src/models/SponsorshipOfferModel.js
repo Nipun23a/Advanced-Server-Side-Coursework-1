@@ -44,9 +44,9 @@ class SponsorshipOfferModel {
 
         const [result] = await pool.execute(
             `INSERT INTO sponsorship_offers
-             (sponsorship_id, alumni_id, sponsorable_id, sponsorable_type, offer_amount, status, is_paid, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, 'pending', false, NOW(), NOW())`,
-            [normalizedSponsorshipId, normalizedAlumniId, sponsorable_id, sponsorable_type, offer_amount]
+             (sponsorship_id, alumni_id, sponsorable_id, sponsorable_type, offer_amount, remaining_amount, status, is_paid, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, 'pending', false, NOW(), NOW())`,
+            [normalizedSponsorshipId, normalizedAlumniId, sponsorable_id, sponsorable_type, offer_amount, offer_amount]
         );
 
         return result;
@@ -110,27 +110,27 @@ class SponsorshipOfferModel {
     }
     static async getAvailableBalance(alumniId) {
         const [rows] = await pool.execute(
-            `SELECT COALESCE(SUM(offer_amount), 0) AS available_balance
+            `SELECT COALESCE(SUM(remaining_amount), 0) AS available_balance
              FROM sponsorship_offers
-             WHERE alumni_id = ? AND status = 'accepted' AND is_paid = false`,
+             WHERE alumni_id = ? AND status = 'accepted' AND remaining_amount > 0`,
             [alumniId]
         );
         return parseFloat(rows[0].available_balance);
     }
     static async getBalanceDetails(alumniId) {
         const [balanceRows] = await pool.execute(
-            `SELECT COALESCE(SUM(offer_amount), 0) AS available_balance,
+            `SELECT COALESCE(SUM(remaining_amount), 0) AS available_balance,
                     COUNT(*) AS total_accepted
              FROM sponsorship_offers
-             WHERE alumni_id = ? AND status = 'accepted' AND is_paid = false`,
+             WHERE alumni_id = ? AND status = 'accepted' AND remaining_amount > 0`,
             [alumniId]
         );
 
         const [paidRows] = await pool.execute(
-            `SELECT COALESCE(SUM(offer_amount), 0) AS total_paid_amount,
+            `SELECT COALESCE(SUM(offer_amount - remaining_amount), 0) AS total_paid_amount,
                     COUNT(*) AS total_paid
              FROM sponsorship_offers
-             WHERE alumni_id = ? AND is_paid = true`,
+             WHERE alumni_id = ? AND (offer_amount - remaining_amount) > 0`,
             [alumniId]
         );
 
@@ -151,23 +151,51 @@ class SponsorshipOfferModel {
     static async markAsPaid(offerId) {
         const [result] = await pool.execute(
             `UPDATE sponsorship_offers
-             SET is_paid = true, status = 'paid', updated_at = NOW()
+             SET remaining_amount = 0, is_paid = true, status = 'paid', updated_at = NOW()
              WHERE id = ?`,
             [offerId]
         );
         return result.affectedRows > 0;
     }
-    static async markAllAsPaidForAlumni(alumniId, connection = null) {
+    static async consumeBalanceForWinningBid(alumniId, bidAmount, connection = null) {
         const db = connection || pool;
+        let remainingBidAmount = parseFloat(bidAmount);
+        let affectedOffers = 0;
 
-        const [result] = await db.execute(
-            `UPDATE sponsorship_offers
-             SET is_paid = true, status = 'paid', updated_at = NOW()
-             WHERE alumni_id = ? AND status = 'accepted' AND is_paid = false`,
+        const [offers] = await db.execute(
+            `SELECT id, offer_amount, remaining_amount
+             FROM sponsorship_offers
+             WHERE alumni_id = ? AND status = 'accepted' AND remaining_amount > 0
+             ORDER BY created_at ASC, id ASC`,
             [alumniId]
         );
 
-        return result.affectedRows;
+        for (const offer of offers) {
+            if (remainingBidAmount <= 0) {
+                break;
+            }
+
+            const currentRemaining = parseFloat(offer.remaining_amount);
+            const deduction = Math.min(currentRemaining, remainingBidAmount);
+            const nextRemaining = currentRemaining - deduction;
+            const isPaid = nextRemaining <= 0;
+
+            await db.execute(
+                `UPDATE sponsorship_offers
+                 SET remaining_amount = ?, is_paid = ?, status = ?, updated_at = NOW()
+                 WHERE id = ?`,
+                [nextRemaining, isPaid, isPaid ? 'paid' : 'accepted', offer.id]
+            );
+
+            remainingBidAmount -= deduction;
+            affectedOffers += 1;
+        }
+
+        if (remainingBidAmount > 0) {
+            throw new Error(`Insufficient accepted sponsorship funds to cover winning bid. Uncovered amount: ${remainingBidAmount.toFixed(2)}`);
+        }
+
+        return affectedOffers;
     }
 
     static normalizeSponsorableType(sponsorableType) {

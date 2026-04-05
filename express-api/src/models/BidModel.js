@@ -32,7 +32,7 @@ class BidModel {
     static async findActiveByUserAndDate(userId, bidDate) {
         const [rows] = await pool.execute(
             `SELECT * FROM bids
-             WHERE user_id = ? AND bid_date = ? AND is_cancelled = false`,
+             WHERE user_id = ? AND bid_date = ? AND bid_status = 'active' AND is_cancelled = false`,
             [userId, bidDate]
         );
         return rows.length > 0 ? rows[0] : null;
@@ -101,15 +101,35 @@ class BidModel {
         return rows.length > 0 ? rows[0] : null;
     }
 
-    static async getAvailableSponsorshipBalance(userId) {
+    static async getAvailableSponsorshipBalance(userId, excludedBidId = null) {
         const [rows] = await pool.execute(
-            `SELECT COALESCE(SUM(offer_amount), 0) AS available_balance
-             FROM sponsorship_offers so
-             JOIN alumni_profiles ap ON so.alumni_id = ap.id
-             WHERE ap.user_id = ? AND so.status = 'accepted' AND so.is_paid = false`,
-            [userId]
+            `SELECT
+                 COALESCE(offers.total_sponsorship, 0) - COALESCE(bids.reserved_bid_amount, 0) AS available_balance,
+                 COALESCE(offers.total_sponsorship, 0) AS total_sponsorship,
+                 COALESCE(bids.reserved_bid_amount, 0) AS reserved_bid_amount
+             FROM
+                 (
+                     SELECT COALESCE(SUM(so.remaining_amount), 0) AS total_sponsorship
+                     FROM sponsorship_offers so
+                     JOIN alumni_profiles ap ON so.alumni_id = ap.id
+                     WHERE ap.user_id = ? AND so.status = 'accepted' AND so.remaining_amount > 0
+                 ) offers
+             CROSS JOIN
+                 (
+                     SELECT COALESCE(SUM(b.bid_amount), 0) AS reserved_bid_amount
+                     FROM bids b
+                     WHERE b.user_id = ?
+                       AND b.bid_status = 'active'
+                       AND b.is_cancelled = false
+                       AND (? IS NULL OR b.id != ?)
+                 ) bids`,
+            [userId, userId, excludedBidId, excludedBidId]
         );
-        return parseFloat(rows[0].available_balance);
+        return {
+            available_balance: parseFloat(rows[0].available_balance),
+            total_sponsorship: parseFloat(rows[0].total_sponsorship),
+            reserved_bid_amount: parseFloat(rows[0].reserved_bid_amount),
+        };
     }
 
     static async updateAmount(bidId, newAmount) {
@@ -125,7 +145,7 @@ class BidModel {
     static async cancel(bidId) {
         const [result] = await pool.execute(
             `UPDATE bids 
-             SET is_cancelled = true, updated_at = NOW() 
+             SET is_cancelled = true, bid_status = 'cancelled', updated_at = NOW() 
              WHERE id = ?`,
             [bidId]
         );
