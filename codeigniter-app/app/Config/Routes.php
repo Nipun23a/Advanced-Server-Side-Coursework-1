@@ -50,6 +50,9 @@ $routes->group('auth', function ($routes) {
 });
 
 $routes->group('api/developer', ['filter' => ['auth', 'verified']], function($routes) {
+    $routes->get('internal-secret', 'Api\DeveloperApiController::secretStatus');
+    $routes->post('internal-secret', 'Api\DeveloperApiController::saveSecret');
+    $routes->post('internal-secret/generate', 'Api\DeveloperApiController::generateSecret');
     $routes->get('api-keys', 'Api\DeveloperApiController::index');
     $routes->post('api-keys', 'Api\DeveloperApiController::create');
     $routes->delete('api-keys/(:num)', 'Api\DeveloperApiController::revoke/$1');

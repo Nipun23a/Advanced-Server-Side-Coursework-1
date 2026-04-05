@@ -1,8 +1,8 @@
-import crypto from "crypto";
 import {pool} from "../config/database.js";
 import {logger} from "../config/logger.js";
 import {sendError} from "../utils/responseHelper.js";
 import TokenGeneration from "../utils/tokenGeneration.js";
+import InternalServiceSecretModel from "../models/InternalServiceSecretModel.js";
 
 export const authenticateBearer = async (req,res,next) => {
   try{
@@ -116,19 +116,22 @@ export const authenticateInternal = async (req,res,next) => {
       );
     }
 
-    const expectedSecret = process.env.INTERNAL_API_SECRET;
-    if (!expectedSecret){
-      logger.warn('Internal auth: INTERNAL_API_SECRET not configured in environment variables');
-      return sendError(
-          res,
-          'SERVER_CONFIG_ERROR',
-          'Server configuration error.Contact the administrator',
-          500
-      );
-    }
+    const secretHash = TokenGeneration.hashToken(internalSecret);
+    const matchedSecret = await InternalServiceSecretModel.findActiveByHash(secretHash);
 
-    const isValid = TokenGeneration.timingSafeCompare(internalSecret,expectedSecret);
-    if (!isValid){
+    if (!matchedSecret){
+      const hasConfiguredSecret = await InternalServiceSecretModel.hasAnyActiveSecret();
+
+      if (!hasConfiguredSecret) {
+        logger.warn('Internal auth: No active internal service secret configured in database');
+        return sendError(
+            res,
+            'SERVER_CONFIG_ERROR',
+            'Server configuration error. No internal service secret is configured.',
+            500
+        );
+      }
+
       logger.warn('Internal Auth: Invalid internal secret provided',{
         ip:req.ip,
         url:req.originalUrl,
@@ -140,12 +143,26 @@ export const authenticateInternal = async (req,res,next) => {
           401
       );
     }
+
+    if (!matchedSecret.secret_hash){
+      logger.warn('Internal auth: Matched internal service secret record is incomplete');
+      return sendError(
+          res,
+          'SERVER_CONFIG_ERROR',
+          'Server configuration error.Contact the administrator',
+          500
+      );
+    }
     const userId = req.body?.user_id || req.query?.user_id || null;
     if (userId) {
       req.user = {id: userId};
       req.internalUserId = userId;
     }
       req.authType = 'internal';
+      req.internalService = {
+        id: matchedSecret.id,
+        serviceName: matchedSecret.service_name,
+      };
     next();
   }catch (error){
     logger.error('Internal auth:Unexpected error',{

@@ -2,15 +2,28 @@
 
 namespace App\Libraries;
 
+use App\Models\InternalServiceSecretModel;
+
 class InternalApiClient
 {
     protected $baseUrl;
-    protected $secret;
+    protected InternalServiceSecretModel $secretModel;
 
     public function __construct()
     {
-        $this->baseUrl = env('INTERNAL_API_URL');
-        $this->secret = env('INTERNAL_API_SECRET');
+        $this->baseUrl = rtrim(env('INTERNAL_API_URL') ?: 'http://localhost:3000', '/');
+        $this->secretModel = new InternalServiceSecretModel();
+    }
+
+    protected function resolveSecret(): string
+    {
+        $secret = $this->secretModel->getActiveSecretValue();
+
+        if (! $secret) {
+            throw new \RuntimeException('External API secret is not configured yet. Save or generate one from the Developer API Keys page.');
+        }
+
+        return $secret;
     }
 
     public function getSecret($method, $endpoint, $data = [] )
@@ -18,15 +31,20 @@ class InternalApiClient
         $client = \Config\Services::curlrequest();
         $options = [
             'headers' => [
-                'X-Internal-Secret' => $this->secret,
+                'X-Internal-Secret' => $this->resolveSecret(),
                 'Content-Type' => 'application/json'
             ]
         ];
-        if (!empty($data)){
-            $options['json'] = $data;
+
+        if (! empty($data)) {
+            if (strtoupper($method) === 'GET') {
+                $options['query'] = $data;
+            } else {
+                $options['json'] = $data;
+            }
         }
 
-        $response = $client -> request($method, $this->baseUrl . $endpoint, $options);
+        $response = $client->request($method, $this->baseUrl . $endpoint, $options);
         return json_decode($response -> getBody(), true);
     }
 
