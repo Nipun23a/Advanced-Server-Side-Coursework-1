@@ -5,7 +5,7 @@ import {logger} from "../config/logger.js";
 class WinnerController {
     static async getTodayFeatures(req,res) {
         try{
-            const result = await WinnerService.getTodayFeatureProfile();
+            const result = await WinnerService.getTodayFeaturedProfile();
             if (!result){
                 return sendError(
                     res,

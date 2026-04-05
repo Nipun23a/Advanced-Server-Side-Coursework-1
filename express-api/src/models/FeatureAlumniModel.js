@@ -80,8 +80,9 @@ class FeatureAlumniModel {
              JOIN users u ON fa.user_id = u.id
              LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
              ORDER BY fa.featured_at DESC
-             LIMIT ? OFFSET ?`,
-            [limit, offset]
+              LIMIT ?, ?`,
+            [offset, limit]
+
         );
         return rows;
     }
@@ -94,8 +95,9 @@ class FeatureAlumniModel {
              JOIN bids b ON fa.bid_id = b.id
              JOIN users u ON fa.user_id = u.id
              ORDER BY fa.featured_at DESC
-             LIMIT ? OFFSET ?`,
-            [limit, offset]
+              LIMIT ?, ?`,
+            [offset, limit]
+
         );
         return rows;
     }

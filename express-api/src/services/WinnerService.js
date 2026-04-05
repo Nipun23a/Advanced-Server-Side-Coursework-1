@@ -134,7 +134,7 @@ class WinnerService {
     static async getFeaturedHistory(page = 1, limit = 10) {
         const offset = (page - 1) * limit;
         const [featured, total] = await Promise.all([
-            FeaturedAlumniModel.findHistory(limit, offset),
+            FeaturedAlumniModel.findHistory(offset,limit),
             FeaturedAlumniModel.countAll(),
         ]);
 
