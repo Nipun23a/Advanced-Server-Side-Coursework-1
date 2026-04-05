@@ -1187,3 +1187,24 @@
 {"code":"NO_ACTIVE_BID","level":"error","message":"BidController.getBidStatus error: No active bid found.","service":"alumni-influencers-api","timestamp":"2026-04-05 21:14:35"}
 {"apiKeyId":null,"authType":"internal","ip":"::1","level":"http","message":"API Request","method":"GET","responseTime":"2ms","service":"alumni-influencers-api","status":404,"timestamp":"2026-04-05 21:14:35","url":"/api/v1/bids/status?user_id=3","userAgent":"unknown"}
 {"apiKeyId":null,"authType":"internal","ip":"::1","level":"http","message":"API Request","method":"GET","responseTime":"3ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 21:14:35","url":"/api/v1/bids/history?user_id=3&page=1&limit=20","userAgent":"unknown"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 22:54:40"}
+{"level":"error","message":"Database connection failed: ","service":"alumni-influencers-api","timestamp":"2026-04-05 22:54:40"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 22:55:16"}
+{"level":"error","message":"Database connection failed: ","service":"alumni-influencers-api","timestamp":"2026-04-05 22:55:16"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 22:56:56"}
+{"level":"error","message":"Database connection failed: Access denied for user 'root'@'localhost' (using password: YES) (code: ER_ACCESS_DENIED_ERROR)","service":"alumni-influencers-api","timestamp":"2026-04-05 22:56:56"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 22:57:03"}
+{"level":"error","message":"Database connection failed: Access denied for user 'root'@'localhost' (using password: YES) (code: ER_ACCESS_DENIED_ERROR)","service":"alumni-influencers-api","timestamp":"2026-04-05 22:57:03"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"Starting cron jobs...","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"CRON: Daily winner selection scheduled — 6:00 PM Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"CRON: Monthly cleanup scheduled — midnight 1st of each month Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"  Alumni Influencers API Server Started","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"  Port:        3000","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"  Environment: development","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"  Swagger:     http://localhost:3000/api-docs","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"  Health:      http://localhost:3000/api/v1/health","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 22:58:55"}
