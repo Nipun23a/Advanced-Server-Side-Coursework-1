@@ -38,6 +38,7 @@ class BiddingController extends BaseController
             'user_id' => $userId,
             'bid_amount' => $this->request->getPost('bid_amount'),
             'bid_date' => $this->request->getPost('bid_date'),
+            'sponsorship_offer_id' => $this->request->getPost('sponsorship_offer_id') ?: null,
         ];
 
         $response = $this->safeApiWrite('post', '/api/v1/bids', $payload);
@@ -50,6 +51,7 @@ class BiddingController extends BaseController
         $payload = [
             'user_id' => $userId,
             'bid_amount' => $this->request->getPost('bid_amount'),
+            'sponsorship_offer_id' => $this->request->getPost('sponsorship_offer_id') ?: null,
         ];
 
         $response = $this->safeApiWrite('put', "/api/v1/bids/{$bidId}", $payload);

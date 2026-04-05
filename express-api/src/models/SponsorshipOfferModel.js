@@ -71,6 +71,22 @@ class SponsorshipOfferModel {
         );
         return rows.length > 0 ? rows[0] : null;
     }
+
+    static async findAcceptedAvailableByIdAndUser(offerId, userId) {
+        const [rows] = await pool.execute(
+            `SELECT so.*
+             FROM sponsorship_offers so
+             JOIN alumni_profiles ap ON ap.id = so.alumni_id
+             WHERE so.id = ?
+               AND ap.user_id = ?
+               AND so.status = 'accepted'
+               AND so.remaining_amount > 0
+             LIMIT 1`,
+            [offerId, userId]
+        );
+
+        return rows.length > 0 ? rows[0] : null;
+    }
     static async findAllByAlumni(alumniId) {
         const [rows] = await pool.execute(
             `SELECT so.*, s.sponsor_name, s.sponsor_type, s.website_url

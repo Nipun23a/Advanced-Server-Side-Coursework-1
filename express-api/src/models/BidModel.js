@@ -3,13 +3,13 @@ import { pool } from "../config/database.js";
 class BidModel {
 
     static async create(bidData) {
-        const { user_id, bid_amount, bid_date } = bidData;
+        const { user_id, bid_amount, bid_date, sponsorship_offer_id = null } = bidData;
 
         const [result] = await pool.execute(
             `INSERT INTO bids
-             (user_id, bid_amount, bid_status, bid_date, is_cancelled, created_at, updated_at)
-             VALUES (?, ?, 'active', ?, false,NOW(), NOW())`,
-            [user_id, bid_amount, bid_date]
+             (user_id, sponsorship_offer_id, bid_amount, bid_status, bid_date, is_cancelled, created_at, updated_at)
+             VALUES (?, ?, ?, 'active', ?, false, NOW(), NOW())`,
+            [user_id, sponsorship_offer_id, bid_amount, bid_date]
         );
         return result;
     }
@@ -76,6 +76,7 @@ class BidModel {
 
         const [rows] = await pool.query(
             `SELECT id, bid_amount, bid_status, bid_date, is_cancelled, created_at, updated_at
+                    , sponsorship_offer_id
              FROM bids WHERE user_id = ?
              ORDER BY created_at DESC
              LIMIT ${safeOffset}, ${safeLimit}`,
@@ -138,6 +139,16 @@ class BidModel {
              SET bid_amount = ?, updated_at = NOW() 
              WHERE id = ?`,
             [newAmount, bidId]
+        );
+        return result.affectedRows > 0;
+    }
+
+    static async updateSponsorshipOffer(bidId, sponsorshipOfferId) {
+        const [result] = await pool.execute(
+            `UPDATE bids
+             SET sponsorship_offer_id = ?, updated_at = NOW()
+             WHERE id = ?`,
+            [sponsorshipOfferId, bidId]
         );
         return result.affectedRows > 0;
     }

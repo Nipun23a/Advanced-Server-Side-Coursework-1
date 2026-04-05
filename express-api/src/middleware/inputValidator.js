@@ -51,6 +51,10 @@ export const validatePlaceBid = [
       .optional()
       .isInt({ min: 1 }).withMessage('User ID must be a positive integer.'),
 
+  body('sponsorship_offer_id')
+      .optional({ nullable: true })
+      .isInt({ min: 1 }).withMessage('Sponsorship offer ID must be a positive integer.'),
+
   handleValidationErrors,
 ];
 
@@ -68,6 +72,10 @@ export const validateUpdateBid = [
         }
         return true;
       }),
+
+  body('sponsorship_offer_id')
+      .optional({ nullable: true })
+      .isInt({ min: 1 }).withMessage('Sponsorship offer ID must be a positive integer.'),
 
   handleValidationErrors,
 ];

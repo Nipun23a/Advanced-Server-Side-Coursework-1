@@ -1,94 +1,82 @@
-import {pool} from "../config/database.js";
-import {logger} from "../config/logger.js";
-import BidModel from "../models/BidModel.js";
+import { pool } from "../config/database.js";
+import { logger } from "../config/logger.js";
 import FeatureAlumniModel from "../models/FeatureAlumniModel.js";
-import MonthlyFeatureCountModel from "../models/MonthlyFeatureCountModel.js";
+import DailyWinnerModel from "../models/DailyWinnerModel.js";
 import SponsorshipOfferModel from "../models/SponsorshipOfferModel.js";
-import FeaturedAlumniModel from "../models/FeatureAlumniModel.js";
 import NotificationService from "./NotificationService.js";
 
 class WinnerService {
-
-    static async selectDailyWinner(){
+    static async selectDailyWinner() {
         const connection = await pool.getConnection();
-        try{
+
+        try {
             await connection.beginTransaction();
+
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
             const now = new Date();
             const year = now.getFullYear();
             const month = now.getMonth() + 1;
-
-            const normalLimit = parseInt(process.env.MONTHLY_FEATURE_LIMIT) || 3;
-            const eventLimit = parseInt(process.env.MONTHLY_FEATURE_LIMIT_WITH_EVENT) || 4;
-
-            const candidates = await FeaturedAlumniModel.findCandidateBids(tomorrowStr, connection);
+            const normalLimit = parseInt(process.env.MONTHLY_FEATURE_LIMIT, 10) || 3;
+            const eventLimit = parseInt(process.env.MONTHLY_FEATURE_LIMIT_WITH_EVENT, 10) || 4;
+            const candidates = await FeatureAlumniModel.findCandidateBids(tomorrowStr, connection);
 
             if (candidates.length === 0) {
                 logger.info(`Winner selection: No bids found for ${tomorrowStr}. No winner selected.`);
                 await connection.commit();
-                connection.release();
                 return null;
             }
 
             logger.info(`Winner selection: ${candidates.length} candidate(s) found for ${tomorrowStr}`);
 
             let winner = null;
-
             for (const candidate of candidates) {
-                const monthlyRecord = await FeaturedAlumniModel.getMonthlyCount(
-                    candidate.user_id, year, month, connection
-                );
-
+                const monthlyRecord = await FeatureAlumniModel.getMonthlyCount(candidate.user_id, year, month, connection);
                 const currentCount = monthlyRecord ? monthlyRecord.count : 0;
                 const attendedEvent = monthlyRecord ? Boolean(monthlyRecord.attended_event) : false;
-
-                // Business rule: 3 features/month normally, 4 with event attendance
                 const maxAllowed = attendedEvent ? eventLimit : normalLimit;
 
                 if (currentCount < maxAllowed) {
                     winner = candidate;
                     logger.info(
-                        `Winner selection: User ${candidate.user_id} eligible ` +
-                        `(featured ${currentCount}/${maxAllowed} times this month)`
+                        `Winner selection: User ${candidate.user_id} eligible (featured ${currentCount}/${maxAllowed} times this month)`
                     );
                     break;
                 }
 
                 logger.info(
-                    `Winner selection: User ${candidate.user_id} reached monthly limit ` +
-                    `(${currentCount}/${maxAllowed}). Skipping to next candidate.`
+                    `Winner selection: User ${candidate.user_id} reached monthly limit (${currentCount}/${maxAllowed}). Skipping to next candidate.`
                 );
             }
+
             if (!winner) {
                 logger.info(
-                    `Winner selection: All ${candidates.length} bidder(s) for ${tomorrowStr} ` +
-                    `have reached their monthly feature limits. No winner selected.`
+                    `Winner selection: All ${candidates.length} bidder(s) for ${tomorrowStr} have reached their monthly feature limits. No winner selected.`
                 );
                 await connection.commit();
-                connection.release();
                 return null;
             }
+
             const losingCandidates = candidates.filter((candidate) => candidate.id !== winner.id);
 
-            await FeaturedAlumniModel.markBidAsWon(winner.id, connection);
-
-            const losersCount = await FeaturedAlumniModel.markOtherBidsAsLost(
-                tomorrowStr, winner.id, connection
-            );
+            await FeatureAlumniModel.markBidAsWon(winner.id, connection);
+            const losersCount = await FeatureAlumniModel.markOtherBidsAsLost(tomorrowStr, winner.id, connection);
             logger.info(`Winner selection: ${losersCount} bid(s) marked as lost`);
 
-            await FeaturedAlumniModel.create(winner.user_id, winner.id, tomorrowStr, connection);
-            await FeaturedAlumniModel.incrementMonthlyCount(winner.user_id, year, month, connection);
-            const winnerAlumniId = await FeaturedAlumniModel.findAlumniProfileIdByUserId(
-                winner.user_id, connection
-            );
+            await FeatureAlumniModel.create(winner.user_id, winner.id, tomorrowStr, connection);
+            await DailyWinnerModel.create(winner.user_id, winner.id, tomorrowStr, connection);
+            await FeatureAlumniModel.incrementMonthlyCount(winner.user_id, year, month, connection);
+
+            const winnerAlumniId = await FeatureAlumniModel.findAlumniProfileIdByUserId(winner.user_id, connection);
             const sponsorshipsPaid = await SponsorshipOfferModel.consumeBalanceForWinningBid(
-                winnerAlumniId, winner.bid_amount, connection
+                winnerAlumniId,
+                winner.bid_amount,
+                connection
             );
             logger.info(`Winner selection: ${sponsorshipsPaid} sponsorship offer(s) updated for bid deduction`);
+
             await connection.commit();
 
             let notificationSummary = null;
@@ -99,15 +87,14 @@ class WinnerService {
                     featuredDate: tomorrowStr,
                 });
             } catch (notificationError) {
-                logger.error('Winner selection: notification send failed after commit', {
+                logger.error("Winner selection: notification send failed after commit", {
                     message: notificationError.message,
                     stack: notificationError.stack,
                 });
             }
 
             logger.info(
-                `Winner selection: COMPLETE for ${tomorrowStr} — ` +
-                `user_id=${winner.user_id}, bid_id=${winner.id}, amount=${winner.bid_amount}`
+                `Winner selection: COMPLETE for ${tomorrowStr} - user_id=${winner.user_id}, bid_id=${winner.id}, amount=${winner.bid_amount}`
             );
 
             return {
@@ -119,23 +106,27 @@ class WinnerService {
                 sponsorships_paid: sponsorshipsPaid,
                 notifications: notificationSummary,
             };
-        }catch (error){
+        } catch (error) {
             await connection.rollback();
-            logger.error('Winner selection: FAILED — transaction rolled back:', error);
+            logger.error("Winner selection: FAILED - transaction rolled back", {
+                message: error.message,
+                stack: error.stack,
+            });
             throw error;
-        }finally {
+        } finally {
             connection.release();
         }
     }
 
-    static async getTodayFeaturedProfile(){
-        const today = new Date().toISOString().split('T')[0];
-        const alumni = await FeaturedAlumniModel.findByDate(today);
+    static async getTodayFeaturedProfile() {
+        const today = new Date().toISOString().split("T")[0];
+        const alumni = await FeatureAlumniModel.findByDate(today);
         if (!alumni) {
             logger.info(`No featured alumni found for today (${today})`);
             return null;
         }
-        const credentials = await FeaturedAlumniModel.fetchAllCredentials(alumni.user_id);
+
+        const credentials = await FeatureAlumniModel.fetchAllCredentials(alumni.user_id);
         return {
             featured_date: alumni.featured_at,
             email: alumni.email,
@@ -147,15 +138,15 @@ class WinnerService {
     }
 
     static async getTodayWinner() {
-        const today = new Date().toISOString().split('T')[0];
-        return await FeaturedAlumniModel.findByDateWithBidDetails(today);
+        const today = new Date().toISOString().split("T")[0];
+        return FeatureAlumniModel.findByDateWithBidDetails(today);
     }
 
     static async getFeaturedHistory(page = 1, limit = 10) {
         const offset = (page - 1) * limit;
         const [featured, total] = await Promise.all([
-            FeaturedAlumniModel.findHistory(limit, offset),
-            FeaturedAlumniModel.countAll(),
+            FeatureAlumniModel.findHistory(limit, offset),
+            FeatureAlumniModel.countAll(),
         ]);
 
         return {
@@ -172,9 +163,10 @@ class WinnerService {
     static async getWinnerHistory(page = 1, limit = 10) {
         const offset = (page - 1) * limit;
         const [winners, total] = await Promise.all([
-            FeaturedAlumniModel.findWinnersHistory(limit, offset),
-            FeaturedAlumniModel.countAll(),
+            DailyWinnerModel.findHistory(limit, offset),
+            DailyWinnerModel.countAll(),
         ]);
+
         return {
             winners,
             pagination: {
@@ -187,14 +179,15 @@ class WinnerService {
     }
 
     static async hasWinnerForDate(date) {
-        return await FeaturedAlumniModel.existsByDate(date);
+        return DailyWinnerModel.existsByDate(date);
     }
 
     static async triggerManualSelection() {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const dateStr = tomorrow.toISOString().split('T')[0];
+        const dateStr = tomorrow.toISOString().split("T")[0];
         const alreadySelected = await this.hasWinnerForDate(dateStr);
+
         if (alreadySelected) {
             logger.warn(`Manual selection: Winner already exists for ${dateStr}`);
             return {
@@ -204,7 +197,6 @@ class WinnerService {
         }
 
         const result = await this.selectDailyWinner();
-
         return {
             result,
             message: result
@@ -212,10 +204,6 @@ class WinnerService {
                 : `No eligible bids found for ${dateStr}.`,
         };
     }
-
-
-
-
 }
 
 export default WinnerService;
