@@ -22,7 +22,7 @@ class PasswordResetTokenModel extends Model
 
     public function createToken(int $userId) : string
     {
-        $this -> invalidateUserTokens($userId);
+        $this -> invalidateUserToken($userId);
         $rawToken = bin2hex(random_bytes(32));
         $tokenHash = hash('sha256',$rawToken);
         $expiredAt = date('Y-m-d H:i:s', strtotime('+1 hour'));

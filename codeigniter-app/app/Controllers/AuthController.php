@@ -322,6 +322,9 @@ class AuthController extends BaseController
 
         $newPasswordHash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
         $this-> userModel -> updatePassword($tokenRecord['user_id'],$newPasswordHash);
+        $this->resetTokenModel->markAsUsed($tokenRecord['id']);
+        $this->resetTokenModel->invalidateUserToken($tokenRecord['user_id']);
+
 
         return redirect() -> to('/auth/login') -> with('success','Password reset successful. Please log in with your new password.');
     }
