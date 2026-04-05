@@ -30,9 +30,9 @@ class InternalApiClient
         return json_decode($response -> getBody(), true);
     }
 
-    public function get($endpoint)
+    public function get($endpoint,$data = [])
     {
-        return $this->getSecret('GET', $endpoint);
+        return $this->getSecret('GET', $endpoint, $data);
     }
 
     public function post($endpoint, $data = [])

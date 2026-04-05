@@ -140,8 +140,13 @@ export const authenticateInternal = async (req,res,next) => {
           401
       );
     }
-    req.internalUserId = req.body.user_id || req.query.user_id || null;
-    req.authType ='internal';
+    const userId = req.body?.user_id || req.query?.user_id;
+    if (!userId) {
+      return sendError(res, 'USER_ID_REQUIRED', 'user_id is required', 400);
+    }
+    req.user = { id: userId };
+    req.internalUserId = userId;
+    req.authType = 'internal';
     next();
   }catch (error){
     logger.error('Internal auth:Unexpected error',{

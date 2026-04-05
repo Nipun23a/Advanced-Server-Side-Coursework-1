@@ -3,9 +3,10 @@ import {sendError, sendSuccess} from "../utils/responseHelper.js";
 import {logger} from "../config/logger.js";
 
 class ApiKeyController{
-    static async generateKey(req,res){
-        try{
-            const userId = req.user.id || req.internalUserId;
+    static async generateKey(req, res) {
+        try {
+            const userId = req.user?.id || req.internalUserId;
+            console.log(userId);
             if (!userId) {
                 return sendError(
                     res,
@@ -14,27 +15,36 @@ class ApiKeyController{
                     400
                 );
             }
+
             const result = await ApiKeyService.generateKey(userId);
-            return sendSuccess(res,result,'API key generated successfully. Save this key - it cannot be retrieved.',201);
-        }catch (error){
+
+            return sendSuccess(
+                res,
+                result,
+                'API key generated successfully. Save this key - it cannot be retrieved.',
+                201
+            );
+
+        } catch (error) {
             logger.error('ApiKeyController.generateKey error:', {
                 message: error.message,
                 stack: error.stack,
                 ip: req.ip,
             });
+
             return sendError(
                 res,
                 'KEY_GENERATION_ERROR',
                 'Failed to generate API key.',
                 500
             );
-
         }
     }
 
     static async listKeys(req,res) {
         try {
-            const userId = req.user.id || req.internalUserId;
+            const userId = req.user?.id || req.internalUserId;
+            console.log(userId);
             if (!userId) {
                 return sendError(
                     res,

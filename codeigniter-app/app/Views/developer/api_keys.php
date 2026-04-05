@@ -15,19 +15,28 @@
 <?= $this->section('scripts') ?>
 
     <script>
+
         async function loadKeys() {
             const res = await fetch('/api/developer/api-keys');
             const data = await res.json();
 
+            console.log(data); // debug
+
             const list = document.getElementById('keyList');
             list.innerHTML = '';
 
-            data.data.forEach(key => {
+            if (!data.success) {
+                list.innerHTML = `<li class="list-group-item text-danger">${data.message}</li>`;
+                return;
+            }
+            const keys = data.data.keys;
+
+            keys.forEach(key => {
                 list.innerHTML += `
-            <li class="list-group-item d-flex justify-content-between">
-                <span>ID: ${key.id}</span>
-                <button class="btn btn-danger btn-sm" onclick="deleteKey(${key.id})">Revoke</button>
-            </li>`;
+        <li class="list-group-item d-flex justify-content-between">
+            <span>ID: ${key.id}</span>
+            <button class="btn btn-danger btn-sm" onclick="deleteKey(${key.id})">Revoke</button>
+        </li>`;
             });
         }
 
@@ -35,7 +44,7 @@
             const res = await fetch('/api/developer/api-keys', { method: 'POST' });
             const data = await res.json();
 
-            alert("Your API Key:\n" + data.data.api_key);
+            alert("Your API Key:\n" + data.data.key + "\n\nPlease save it securely. You won't be able to see it again.");
             loadKeys();
         }
 
@@ -45,6 +54,7 @@
         }
 
         loadKeys();
+
     </script>
 
 <?= $this->endSection() ?>

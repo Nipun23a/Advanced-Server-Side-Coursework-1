@@ -18,8 +18,10 @@ import {errorHandler, notFoundHandler} from "./src/middleware/errorHandler.js";
 import {logger} from "./src/config/logger.js";
 import startCronJobs from "./src/cron/WinerSelection.js";
 import {testConnection} from "./src/config/database.js";
+import publicRoutes from "./src/routes/publicRoutes.js";
 
 const app = express();
+express.json();
 const PORT = process.env.PORT || 3000;
 
 app.set("trust proxy", 1);
@@ -58,7 +60,7 @@ app.get('/api/v1/health', (req, res) => {
     });
 });
 
-//app.use('/api/v1/public', publicRoutes);
+app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/bids', biddingRoutes);
 app.use('/api/v1/winners', winnerRoutes);
 app.use('/api/v1/api-keys', apiKeyRoutes);
@@ -69,15 +71,10 @@ app.use(errorHandler);
 
 const startServer = async () => {
     try {
-        // Step 1: Verify database connection
         logger.info('Testing database connection...');
         await testConnection();
-
-        // Step 2: Start scheduled cron jobs
         logger.info('Starting cron jobs...');
         startCronJobs();
-
-        // Step 3: Start HTTP server
         app.listen(PORT, () => {
             logger.info('===========================================');
             logger.info('  Alumni Influencers API Server Started');
