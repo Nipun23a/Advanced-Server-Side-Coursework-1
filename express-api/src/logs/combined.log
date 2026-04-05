@@ -916,3 +916,38 @@
 {"apiKeyId":6,"authType":"bearer","ip":"::ffff:127.0.0.1","level":"http","message":"API Request","method":"GET","responseTime":"14ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 16:53:32","url":"/api/v1/winners/history?page=1&limit=10","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"}
 {"apiKeyId":null,"authType":"internal","ip":"::ffff:127.0.0.1","level":"http","message":"API Request","method":"GET","responseTime":"1ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 16:53:47","url":"/api/v1/winners/check?date=2026-04-05","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"}
 {"apiKeyId":null,"authType":"internal","ip":"::ffff:127.0.0.1","level":"http","message":"API Request","method":"GET","responseTime":"2ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 16:53:54","url":"/api/v1/winners/check?date=2026-04-06","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"}
+{"level":"info","message":"SIGINT received. Shutting down gracefully...","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:31"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"Starting cron jobs...","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"CRON: Daily winner selection scheduled — 6:00 PM Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"CRON: Monthly cleanup scheduled — midnight 1st of each month Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"  Alumni Influencers API Server Started","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"  Port:        3000","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"  Environment: development","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"  Swagger:     http://localhost:3000/api-docs","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"  Health:      http://localhost:3000/api/v1/health","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 17:16:34"}
+{"code":"INVALID_BID_DATE","ip":"::ffff:127.0.0.1","level":"error","message":"BidController.placeBid error: Bids can only be placed for tomorrow's featured slot (2026-04-06).","service":"alumni-influencers-api","timestamp":"2026-04-05 17:17:00"}
+{"apiKeyId":null,"authType":"internal","ip":"::ffff:127.0.0.1","level":"http","message":"API Request","method":"POST","responseTime":"10ms","service":"alumni-influencers-api","status":400,"timestamp":"2026-04-05 17:17:00","url":"/api/v1/bids","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"}
+{"level":"info","message":"No featured alumni found for today (2026-04-05)","service":"alumni-influencers-api","timestamp":"2026-04-05 17:22:53"}
+{"apiKeyId":6,"authType":"bearer","ip":"::ffff:127.0.0.1","level":"http","message":"API Request","method":"GET","responseTime":"12ms","service":"alumni-influencers-api","status":404,"timestamp":"2026-04-05 17:22:53","url":"/api/v1/public/featured-alumni/today","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"}
+{"apiKeyId":6,"authType":"bearer","ip":"::ffff:127.0.0.1","level":"http","message":"API Request","method":"GET","responseTime":"12ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 17:23:04","url":"/api/v1/public/featured-alumni/history?page=1&limit=10","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"}
+{"level":"info","message":"SIGINT received. Shutting down gracefully...","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:33"}
+{"level":"info","message":"Testing database connection...","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"Database connection established successfully","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"Starting cron jobs...","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"CRON: Daily winner selection scheduled — 6:00 PM Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"CRON: Monthly cleanup scheduled — midnight 1st of each month Europe/London","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"  Alumni Influencers API Server Started","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"  Port:        3000","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"  Environment: development","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"  Swagger:     http://localhost:3000/api-docs","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"  Health:      http://localhost:3000/api/v1/health","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"===========================================","service":"alumni-influencers-api","timestamp":"2026-04-05 17:28:35"}
+{"level":"info","message":"Event attendance marked: user_id=3, year=2026, month=4","service":"alumni-influencers-api","timestamp":"2026-04-05 17:30:13"}
+{"apiKeyId":null,"authType":"internal","ip":"::ffff:127.0.0.1","level":"http","message":"API Request","method":"POST","responseTime":"11ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 17:30:13","url":"/api/v1/bids/event-attendance","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0"}

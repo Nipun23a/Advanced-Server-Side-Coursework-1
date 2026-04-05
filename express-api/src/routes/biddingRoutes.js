@@ -180,6 +180,40 @@ router.delete(
     BiddingController.cancelBid
 );
 
+/**
+ * @swagger
+ * /api/v1/bids/event-attendance:
+ *   post:
+ *     summary: Mark alumni event attendance for the current month
+ *     description: >
+ *       Records that the user attended a university alumni event this month.
+ *       This enables the higher monthly feature limit of 4 instead of 3.
+ *     tags: [Bidding]
+ *     security:
+ *       - InternalAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [user_id]
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Event attendance recorded successfully
+ *       401:
+ *         description: Authentication required
+ */
+router.post(
+    '/event-attendance',
+    authenticateInternal,
+    BiddingController.markEventAttendance
+);
+
 // ============================================================================
 // READ OPERATIONS — Any auth (internal or bearer)
 // ============================================================================

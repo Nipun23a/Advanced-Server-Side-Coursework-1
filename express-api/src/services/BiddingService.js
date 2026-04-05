@@ -1,8 +1,106 @@
 import BidModel from "../models/BidModel.js";
+import {pool} from "../config/database.js";
 import {logger} from "../config/logger.js";
 
 class BiddingService {
+    static getBiddingConfig() {
+        return {
+            timezone: process.env.BID_TIMEZONE || 'Europe/London',
+            cutoffHour: parseInt(process.env.BID_CUTOFF_HOUR, 10) || 18,
+            cutoffMinute: parseInt(process.env.BID_CUTOFF_MINUTE, 10) || 0,
+        };
+    }
+
+    static getDatePartsInTimeZone(date, timezone) {
+        const formatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone: timezone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+        });
+
+        const parts = formatter.formatToParts(date);
+        const values = Object.fromEntries(
+            parts
+                .filter((part) => part.type !== 'literal')
+                .map((part) => [part.type, part.value])
+        );
+
+        return {
+            year: parseInt(values.year, 10),
+            month: parseInt(values.month, 10),
+            day: parseInt(values.day, 10),
+            hour: parseInt(values.hour, 10),
+            minute: parseInt(values.minute, 10),
+        };
+    }
+
+    static formatDateKey(year, month, day) {
+        return [
+            String(year).padStart(4, '0'),
+            String(month).padStart(2, '0'),
+            String(day).padStart(2, '0'),
+        ].join('-');
+    }
+
+    static getTomorrowDateKeyInTimeZone(timezone) {
+        const nowParts = this.getDatePartsInTimeZone(new Date(), timezone);
+        const localDateAnchor = new Date(Date.UTC(nowParts.year, nowParts.month - 1, nowParts.day, 12, 0, 0));
+        localDateAnchor.setUTCDate(localDateAnchor.getUTCDate() + 1);
+
+        return this.formatDateKey(
+            localDateAnchor.getUTCFullYear(),
+            localDateAnchor.getUTCMonth() + 1,
+            localDateAnchor.getUTCDate()
+        );
+    }
+
+    static enforceTomorrowOnlyBidDate(bidDate) {
+        const { timezone } = this.getBiddingConfig();
+        const tomorrowDateKey = this.getTomorrowDateKeyInTimeZone(timezone);
+
+        if (bidDate === tomorrowDateKey) {
+            return;
+        }
+
+        const error = new Error(`Bids can only be placed for tomorrow's featured slot (${tomorrowDateKey}).`);
+        error.code = 'INVALID_BID_DATE';
+        error.status = 400;
+        throw error;
+    }
+
+    static enforceTomorrowBidCutoff(bidDate) {
+        const { timezone, cutoffHour, cutoffMinute } = this.getBiddingConfig();
+        const nowParts = this.getDatePartsInTimeZone(new Date(), timezone);
+        const tomorrowDateKey = this.getTomorrowDateKeyInTimeZone(timezone);
+
+        if (bidDate !== tomorrowDateKey) {
+            return;
+        }
+
+        const hasPassedCutoff =
+            nowParts.hour > cutoffHour ||
+            (nowParts.hour === cutoffHour && nowParts.minute >= cutoffMinute);
+
+        if (!hasPassedCutoff) {
+            return;
+        }
+
+        const error = new Error(
+            `Bidding for ${bidDate} closed at ${String(cutoffHour).padStart(2, '0')}:${String(cutoffMinute).padStart(2, '0')} ${timezone}.`
+        );
+        error.code = 'BID_CUTOFF_PASSED';
+        error.status = 400;
+        throw error;
+    }
+
     static async placeBid(userId, bidAmount, bidDate) {
+        this.enforceTomorrowOnlyBidDate(bidDate);
+        this.enforceTomorrowBidCutoff(bidDate);
+
         const existingBid = await BidModel.findActiveByUserAndDate(userId, bidDate);
 
         if (existingBid) {
@@ -69,6 +167,13 @@ class BiddingService {
             error.status = 404;
             throw error;
         }
+        const bidDate = bid.bid_date instanceof Date
+            ? bid.bid_date.toISOString().split('T')[0]
+            : String(bid.bid_date).split('T')[0];
+
+        this.enforceTomorrowOnlyBidDate(bidDate);
+        this.enforceTomorrowBidCutoff(bidDate);
+
         if (bid.is_cancelled) {
             const error = new Error('Cannot update a cancelled bid.');
             error.code = 'BID_CANCELLED';
@@ -203,6 +308,23 @@ class BiddingService {
             year,
             month,
         };
+    }
+
+    static async markEventAttendance(userId) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+
+        await pool.execute(
+            `INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event)
+             VALUES (?, ?, ?, 0, true)
+             ON DUPLICATE KEY UPDATE attended_event = true`,
+            [userId, year, month]
+        );
+
+        logger.info(`Event attendance marked: user_id=${userId}, year=${year}, month=${month}`);
+
+        return this.getMonthlyLimit(userId);
     }
 
     static async getAvailableBalance(userId) {

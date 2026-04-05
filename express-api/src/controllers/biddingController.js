@@ -159,6 +159,33 @@ class BiddingController {
         }
     }
 
+    static async markEventAttendance(req, res) {
+        try {
+            const userId = parseInt(req.body?.user_id) || req.internalUserId;
+
+            if (!userId) {
+                return sendError(res, 'MISSING_USER_ID', 'User ID is required.', 400);
+            }
+
+            const result = await BiddingService.markEventAttendance(userId);
+
+            return sendSuccess(res, result, 'Event attendance recorded successfully.');
+
+        } catch (error) {
+            logger.error('BidController.markEventAttendance error:', {
+                message: error.message,
+                code: error.code,
+                stack: error.stack,
+            });
+
+            if (error.code) {
+                return sendError(res, error.code, error.message, error.status || 400);
+            }
+
+            return sendError(res, 'EVENT_ATTENDANCE_ERROR', 'Failed to record event attendance.', 500);
+        }
+    }
+
     static async getAvailableBalance(req, res) {
         try {
             const userId = parseInt(req.query.user_id) || (req.apiKey ? req.apiKey.userId : null) || req.internalUserId;
