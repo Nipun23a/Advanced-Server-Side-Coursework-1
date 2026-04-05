@@ -1,436 +1,486 @@
-# Alumni Influencers - Web API Development Platform
-## 6COSC022W Advanced Server-Side Web Development - Coursework 1
-
-### Table of Contents
-
-1. [Project Overview] (#project-overview)
-2. [System Architecture] (#system-architecture)
-3. [Technology Stack] (#technology-stack)
-4. [Prerequisites] (#prerequisites)
-5. [Installation and Setup] (#installation-and-setup)
-6. [Environment Variables] (#environment-variables)
-7. [Database Schema] (#database-schema)
-8. [Application Structure] (#application-structure)
-9. [Features] (#features)
-10. [API Documentation] (#api-documentation)
-11. [Security Implementation] (#security-implementation)
-12. [Bidding System] (#bidding-system)
-13. [Sponsorship Model] (#sponsorship-model)
-14. [Scheduled Tasks] (#scheduled-tasks)
-15. [Testing] (#testing)
-16. [Troubleshooting] (#troubleshooting)
-
----
+# Alumni Influencers Platform
+## 6COSC022W Advanced Server-Side Web Development Coursework 1
 
 ## Project Overview
 
-Alumni Influencers is a web-based platform commissioned by the University of Eastminster, developed by Phantasmagoria Ltd. The platform transforms alumni engagement into a self-sustaining marketplace where successful alumni leverage their professional credentials to compete for daily featured slots through a blind bidding system sponsored by professional course providers, licensing bodies, and certification organisations.
-The platform serves two primary audiences. Alumni interact through a server-rendered web application to manage their profiles, receive sponsorship offers, and participate in daily bidding. External clients, including an augmented reality application and third-party developer applications, consume alumni data through a RESTful API secured with bearer token authentication.
+Alumni Influencers is a two-application platform for managing alumni profiles, sponsorship-backed blind bidding, and a public developer API for featured alumni data.
 
----
+- `codeigniter-app` is the server-rendered web application for registration, login, profile management, bidding, sponsorship handling, and developer dashboards.
+- `express-api` is the business-logic and public API layer for bidding rules, winner selection, sponsorship accounting, API key management, usage logging, and Swagger docs.
+- Both applications share the same MySQL database.
 
 ## System Architecture
-The platform adopts a three-layer MVC architecture built around the API Gateway Pattern. And Architecture Diagram is shown below:
 
-![System Architecture Diagram](diagrams/Advanced_Server_Side_Coursework1_System_Architecture_Diagram.png)
+The project uses a three-layer architecture:
 
-### Layer 1 - CodeIgniter 4 (Web MVC and API Gateway)
+1. CodeIgniter 4 web layer
+   - Session-based authentication
+   - CSRF-protected web forms
+   - Profile, bidding, sponsorship, and developer pages
+   - Internal HTTP calls to the Express API
+2. Express.js business API
+   - Blind bidding rules
+   - Monthly limit enforcement
+   - Sponsorship balance and offer lifecycle
+   - API key generation, revocation, and usage statistics
+   - Swagger/OpenAPI docs at `/api-docs`
+3. MySQL database
+   - Shared relational schema in 3NF
+   - Foreign keys and unique constraints for data integrity
 
-CodeIgniter 4 serves as the web-facing application layer and functions simultaneuosly as an internal API Gateway. It handles all server-rendered web functionality, including alumni registration, authentication 
-with session management, profile creation, and editing through a structured web forms, bidding submission interface, and the developer API key management dashboard. CodeIgniter does not contain core business logic. When a web user performs an action requiring
-business processing, the CodeIgniter controller delegates that request to Express.js via an internal HTTP call. This ensures all business rules reside in a single authoritative location.
+Security boundaries:
 
-### Layer 2 -  Express.js (Business Logic API with MVC and Service Layer)
-
-Express.js operates as the core business logic engine and the public-facing developer API. It is structured using the MVC pattern with an additional service layer for complex business operations. It handles blind bidding logic, automated winner selection via node-cron, monthly appearance limit enforcement, sponsorship management, bearer token authentication for external clients, API key lifecycle management, usage logging, and comprehensive Swagger/OpenAPI documentation served at the /api-docs endpoint.
-
-### Layer 3 â€“ MySQL Database (3NF Normalized)
-Both services connect to a shared MySQL relational database designed in Third Normal Form. The schema is logically partitioned by ownership. CodeIgniter primarily reads and writes user accounts, sessions, and profile data. Express.js owns business-critical tables including bids, featured alumni records, sponsorship offers, API keys, and usage logs. Database-level constraints including foreign keys, unique indexes, and check constraints provide an additional layer of data integrity enforcement independent of application-level validation.
-
-### Security Boundaries
-
-The architecture establishes three distinct security boundaries. Security Boundary 1 protects web users through session-based authentication with CSRF Token protection via CodeIgniter. Security Boundary 2 governs internal service-to-service communication between CodeIgniter and Express.js using a shared internal API secret. Security Boundary 3 secures external API access through bearer token authentication managed by Express.js.
-
----
+- Web users authenticate with CodeIgniter sessions
+- CodeIgniter calls Express using `X-Internal-Secret`
+- External clients call the public API using bearer API keys
 
 ## Technology Stack
 
-### Backend - Web Application Layer
-- CodeIgniter 4 (PHP 8.1+)
-- Boostrap Admin Template (server rendered views)
-- CodeIgniter Session Library
-- CodeIgniter Security Library
+### Web Layer
+- PHP 8.1+
+- CodeIgniter 4
+- MySQLi
 
-### Backend - Business Logic Layer
-- Express.js (Node.js 18+)
-- express-validator (input validation)
-- express-rate-limit (rate limiting)
-- helmet (security headers)
-- cors (cross-origin resource sharing)
-- bcryptjs (password hashing)
-- crypto (token generation)
-- node-cron (scheduled tasks)
-- swagger-jsdoc and swagger-ui-express (API documentation)
-- mysql2 (database connection)
-- dotenv (environment configuration)
+### API Layer
+- Node.js 18+
+- Express.js
+- mysql2
+- helmet
+- cors
+- express-rate-limit
+- express-validator
+- swagger-jsdoc
+- swagger-ui-express
+- node-cron
+- nodemailer
+- winston
 
 ### Database
-- MySQL
-
-### Development Tools
-- Nodemon (Express.js hot reload)
-- Postman (API Testing)
-
----
+- MySQL 8+
 
 ## Prerequisites
 
-Before setting up the project, ensure the following software is installed on your machine:
-
-- PHP 8.1 or higher with the following extensions enabled: intl, mbstring, json, mysqlnd, curl
+- PHP 8.1+ with `intl`, `mbstring`, `json`, `mysqlnd`, `curl`
 - Composer
-- Node.js 18 or higher
-- npm (Node Package Manager)
-- MySQL 8.0 or higher
-- Git
-
----
+- Node.js 18+
+- npm
+- MySQL 8+
 
 ## Installation and Setup
 
-### Step 1 â€“ Clone the Repository
+### 1. Clone the repository
 
-```
+```bash
 git clone https://github.com/Nipun23a/Advanced-Server-Side-Coursework-1.git
 cd Advanced-Server-Side-Coursework-1
 ```
 
-### Step 2 â€“ Database Setup
-Log into MYSQL and create the database.
-```
-mysql -u root -p
-CREATE DATABASE alumni_influencers;
-EXIT;
+### 2. Create the database
+
+```sql
+CREATE DATABASE ci4;
 ```
 
-### Step 3 - CodeIgniter 4 Setup
-```
+The current project configuration expects the database to be named `ci4`.
+
+### 3. Set up CodeIgniter
+
+```bash
 cd codeigniter-app
 composer install
-cp env .env
-```
-
-Edit the .enf file with your database credentials and application settings.
-(see Environment Variables section below)
-
-Run database migrations to create all tables.
-```
+copy env .env
 php spark migrate
-```
-
-Start the CodeIgniter development server.
-```
 php spark serve --port 8080
 ```
 
-The web application will be available at http://localhost:8080/.
+The web application runs at `http://localhost:8080`.
 
-### Step 4 - Express.js Setup
-Open a new terminal window.
-```
+### 4. Set up Express API
+
+Open a new terminal:
+
+```bash
 cd express-api
 npm install
-cp .env.example .env
-```
-Edit the .env file with your database credentials and configuration (see Environment Variable section below).
-
-Start the Express.js API Server.
-```aiignore
 npm run dev
 ```
 
-The API server will be available at http://localhost:3000.
-Swagger documentation will be accessible at http://localhost:3000/api-docs.
+The API runs at `http://localhost:3000`.
 
----
+Swagger UI is available at:
+
+```text
+http://localhost:3000/api-docs
+```
 
 ## Environment Variables
 
-### CodeIgniter 4 (.env)
-```
-# Application
-CI_ENVIRONMENT = development
-app.baseURL = 'http://localhost:8080'
+### CodeIgniter `.env`
 
-# Database
-database.default.hostname = localhost
-database.default.database = alumni_influencers
-database.default.username = root
-database.default.password = YOUR_DB_PASSWORD
-database.default.DBDriver = MySQLi
-database.default.port = 3306
+The current app uses these main variables:
 
-# Session
-session.driver = 'CodeIgniter\Session\Handlers\DatabaseHandler'
-session.cookieName = 'alumni_session'
-session.expiration = 7200
-session.savePath = 'ci_sessions'
-session.matchIP = false
-session.timeToUpdate = 300
+```ini
+CI_ENVIRONMENT=development
 
-# Security
-security.csrfProtection = 'session'
-security.tokenRandomize = true
-security.regenerate = true
+database.default.hostname=localhost
+database.default.database=ci4
+database.default.username=root
+database.default.password=YOUR_DB_PASSWORD
+database.default.DBDriver=MySQLi
+database.default.port=3306
 
-# Internal API Communication
-INTERNAL_API_URL = http://localhost:3000
-INTERNAL_API_SECRET = YOUR_INTERNAL_API_SECRET_KEY
+INTERNAL_API_URL=http://localhost:3000
+INTERNAL_API_SECRET=YOUR_INTERNAL_API_SECRET
 
-# Email Configuration
-email.protocol = smtp
-email.SMTPHost = YOUR_SMTP_HOST
-email.SMTPPort = 587
-email.SMTPUser = YOUR_EMAIL_ADDRESS
-email.SMTPPass = YOUR_EMAIL_PASSWORD
-email.mailType = html
-email.fromEmail = noreply@eastminster.ac.uk
-email.fromName = Alumni Influencers Platform
-
-# File Upload
-upload.maxSize = 2048
-upload.allowedTypes = jpg,jpeg,png,gif
-upload.uploadPath = ./public/uploads/profiles/
+email.protocol=smtp
+email.SMTPHost=YOUR_SMTP_HOST
+email.SMTPPort=587
+email.SMTPUser=YOUR_SMTP_USER
+email.SMTPPass=YOUR_SMTP_PASS
+email.mailType=html
+email.fromEmail=noreply@eastminster.ac.uk
+email.fromName='Alumni Influencers Platform'
 ```
 
-### Express.js (.env.example)
-```aiignore
-# Server
+CodeIgniter session and CSRF settings are mainly controlled from config files:
+
+- database-backed sessions via `Config\Session`
+- randomized CSRF tokens via `Config\Security`
+- secure cookies via `Config\Cookie`
+
+### Express `.env`
+
+Create `express-api/.env` with:
+
+```ini
 PORT=3000
 NODE_ENV=development
 
-# Database
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=alumni_influencers
+DB_NAME=ci4
 DB_USER=root
 DB_PASSWORD=YOUR_DB_PASSWORD
+DB_CONNECTION_LIMIT=10
 
-# Authentication
-JWT_SECRET=YOUR_JWT_SECRET_KEY
-JWT_EXPIRY=24h
+INTERNAL_API_SECRET=YOUR_INTERNAL_API_SECRET
 
-# Internal Service Communication
-INTERNAL_API_SECRET=YOUR_INTERNAL_API_SECRET_KEY
-
-# API Key Configuration
 API_KEY_LENGTH=64
 API_KEY_PREFIX=alum_
 
-# Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 RATE_LIMIT_BID_WINDOW_MS=60000
 RATE_LIMIT_BID_MAX_REQUESTS=10
+RATE_LIMIT_AUTH_WINDOW_MS=900000
+RATE_LIMIT_AUTH_MAX_REQUESTS=5
 
-# Bidding Configuration
 BID_CUTOFF_HOUR=18
 BID_CUTOFF_MINUTE=0
 BID_TIMEZONE=Europe/London
 MONTHLY_FEATURE_LIMIT=3
 MONTHLY_FEATURE_LIMIT_WITH_EVENT=4
 
-# Email Notifications
-SMTP_HOST=YOUR_SMTP_HOST
-SMTP_PORT=587
-SMTP_USER=YOUR_EMAIL_ADDRESS
-SMTP_PASS=YOUR_EMAIL_PASSWORD
-NOTIFICATION_FROM_EMAIL=noreply@eastminster.ac.uk
-
-# CORS
-CORS_ORIGIN=http://localhost:8080
+CORS_ORIGIN=http://localhost:8080,http://localhost:3000
 CORS_METHODS=GET,POST,PUT,DELETE
 CORS_CREDENTIALS=true
 
-# Logging
 LOG_LEVEL=debug
 LOG_FILE=./logs/api.log
+
+SMTP_HOST=YOUR_SMTP_HOST
+SMTP_PORT=587
+SMTP_USER=YOUR_SMTP_USER
+SMTP_PASS=YOUR_SMTP_PASS
+NOTIFICATION_FROM_EMAIL=noreply@eastminster.ac.uk
 ```
---- 
 
 ## Database Schema
-The database consists of 17 tables organized into four logical groups. All tables follow Third Normal Form normalisation to eliminate data redundancy and ensure referential integrity. The ER diagram below shows the database schema:
-![Database Schema](diagrams/Advanced_Server_Side_Coursework1_ER DIAGRAM.png)
 
-### User and Authentication Tables
+The database is normalized around users, profiles, credentials, bidding, sponsorships, and API access.
 
-**users** â€“ Stores alumni, developer, and admin accounts with hashed passwords and email verification status. The role field uses an ENUM to distinguish between account types. The email field has a unique constraint to prevent duplicate registrations.
+### Authentication and user tables
 
-**alumni_profiles** â€“ Stores profile information for each alumni with a one-to-one relationship to the users table. Contains biography, LinkedIn URL, and profile image path. The user_id field has a unique constraint ensuring one profile per user.
+- `users`
+- `alumni_profiles`
+- `email_verification_tokens`
+- `password_reset_tokens`
+- `ci_sessions`
 
-**email_verification_tokens** â€“ Stores hashed verification tokens with expiry timestamps. The used_at field is null until the token is consumed, enforcing single-use behaviour. Multiple tokens may exist per user to handle re-sends.
+### Profile detail tables
 
-**password_reset_tokens** â€“ Stores hashed password reset tokens with expiry timestamps. Follows the same single-use pattern as email verification tokens with a shorter expiry window.
+- `degrees`
+- `certificates`
+- `licenses`
+- `professional_courses`
+- `employment_history`
 
-### Profile Detail Tables
-**degrees** â€“ Stores academic degrees with institution URLs and completion dates. Each degree is linked to an alumni profile via profile_id with a many-to-one relationship.
+### Business logic tables
 
-**certificates** â€“ Stores professional certifications with provider URLs and completion dates. Each certificate is linked to an alumni profile via profile_id with a many-to-one relationship.
+- `bids`
+- `featured_alumni`
+- `monthly_feature_counts`
+- `sponsors`
+- `sponsorship_offers`
 
-**licences** â€“ Stores professional licences with provider URLs, completion dates, and optional expiry dates. Each licence is linked to an alumni profile via profile_id with a many-to-one relationship.
+### API and access tables
 
-**professional_courses** â€“ Stores short professional courses with provider URLs, completion dates, and optional end dates. Each course is linked to an alumni profile via profile_id with a many-to-one relationship.
+- `api_keys`
+- `api_usage_logs`
+- `internal_service_secrets`
 
-**employment_history** â€“ Stores employment records with company names, roles, start dates, and optional end dates where null indicates current employment. Each record is linked to an alumni profile via profile_id with a many-to-one relationship.
+Important implementation notes:
 
-### Business Logic Tables
-**sponsors** â€“ Stores sponsoring organisations including professional course providers, licensing bodies, and certification organisations. The sponsor_type field uses an ENUM to categorise the sponsor.
-
-**sponsorship_offers** â€“ Stores individual sponsorship offers linking a sponsor to a specific alumni and their credential (certificate, licence, or professional course). Uses a polymorphic relationship via sponsorable_id and sponsorable_type fields. The offer_amount records the monetary value offered. The status field tracks the offer lifecycle from pending through accepted or declined to paid. The is_paid field is only set to true when the alumni wins the daily bid and their profile is displayed.
-
-**bids** â€“ Stores daily bid submissions. The bid_amount field records the amount the alumni chooses to bid from their available sponsorship funds. The bid_status ENUM tracks whether the bid is active, won, or lost. The is_cancelled boolean allows bid cancellation. The bid_date field indicates which day the alumni is bidding for. A unique composite constraint on user_id and bid_date ensures one bid per user per day. The sponsorship_total field records the total sponsorship money available at the time of bidding for audit purposes.
-
-**featured_alumni** â€“ Stores the daily winner record linking the winning user and their bid to a specific featured date. A unique constraint on featured_date ensures only one alumni is featured per day. A unique constraint on bid_id ensures each bid can only win once.
-
-**monthly_feature_count** â€“ Tracks how many times each alumni has been featured in a given month. A unique composite constraint on user_id, year, and month ensures one tracking record per user per month. The attended_event boolean determines whether the alumni qualifies for a fourth appearance that month.
-
-### API and Security Tables
-
-**api_keys** â€“ Stores hashed API keys for developer and external client authentication. The raw key is displayed only once at creation. The is_active field allows soft deactivation and the revoked_at timestamp records when a key was revoked.
-
-**api_usage_logs** â€“ Stores every API request for usage analytics. Records the associated api_key_id, endpoint accessed, HTTP method, timestamp, and source IP address. This table supports the usage statistics requirement.
-
-**internal_service_secrets** â€“ Stores hashed secrets used for internal communication between CodeIgniter and Express.js. The is_active field allows secret rotation without downtime.
-
----
+- `users.email` is unique
+- `alumni_profiles.user_id` is one-to-one with `users`
+- `featured_alumni.featured_at` is unique per day
+- `monthly_feature_counts` tracks monthly winner counts and `attended_event`
+- `bids.bid_status` currently supports `active`, `won`, `lost`, and `cancelled`
+- `sponsorship_offers.remaining_amount` tracks how much sponsorship balance is still available after winning bids are deducted
 
 ## Application Structure
 
-### CodeIgniter 4 Directory Structure
+### CodeIgniter
 
-```aiignore
-This need to added
+```text
+codeigniter-app/
++-- app/
+¦   +-- Config/
+¦   +-- Controllers/
+¦   +-- Database/Migrations/
+¦   +-- Filters/
+¦   +-- Helpers/
+¦   +-- Models/
+¦   +-- Views/
++-- public/
++-- writable/
 ```
-### Express.js Directory Structure
- ```
- This need to added
- ```
 
-## Features
+### Express API
+
+```text
+express-api/
++-- src/
+¦   +-- config/
+¦   +-- controllers/
+¦   +-- cron/
+¦   +-- middleware/
+¦   +-- models/
+¦   +-- routes/
+¦   +-- services/
+¦   +-- utils/
++-- logs/
++-- server.js
+```
+
+## Core Features Implemented
+
 ### Alumni Registration and Authentication
 
-The registration system requires a valid university domain email address. During registration the system validates email format and domain, enforces password strength requirements (minimum 8 characters, uppercase, lowercase, number, special character), checks for duplicate email addresses, and hashes the password using bcrypt with 12 salt rounds before storage.
+- university-domain email registration
+- bcrypt password hashing with cost 12
+- email verification with hashed tokens and expiry
+- login/logout with CodeIgniter sessions
+- inactivity timeout handling
+- password reset with single-use hashed tokens and email delivery
 
-Upon successful registration an email verification token is generated using crypto.randomBytes, hashed with SHA-256, and stored with a 24-hour expiry. The raw token is sent to the user via email as a verification link. Login is blocked until the email is verified.
+### Complete Alumni Profile Creation
 
-Login authenticates the user against the stored bcrypt hash, creates a server-side session via CodeIgniter's session library, and sets secure cookie attributes including HttpOnly, Secure, and SameSite flags. Sessions expire after 2 hours of inactivity with automatic cleanup.
-
-Logout destroys the server-side session and clears the session cookie.
-
-Password reset generates a time-limited token (1 hour expiry), sends it via email, and allows the user to set a new password. The token is single-use and marked as consumed after successful reset.
-
-### Compete Alumni Profile Management
-
-
-Alumni can manage their complete professional profile through server-rendered web forms. Each profile section supports full CRUD operations (create, read, update, delete).
-
-Personal information includes biography text and LinkedIn profile URL with URL format validation.
-
-Degrees section allows adding multiple academic degrees with degree name, institution URL (validated), and completion date.
-
-Certificates section allows adding multiple professional certifications with certificate name, provider URL (validated), and completion date.
-
-Licences section allows adding multiple professional licences with licence name, provider URL (validated), completion date, and optional expiry date.
-
-Professional courses section allows adding multiple short courses with course name, provider URL (validated), completion date, and optional end date.
-
-Employment history section allows adding multiple employment records with company name, role/title, start date, and optional end date where null indicates current employment.
-
-Profile image upload accepts JPG, JPEG, PNG, and GIF formats with a maximum file size of 2MB. Images are stored on the server filesystem with the path recorded in the database.
-
-The profile dashboard displays a completion status indicator showing which sections have been filled out.
+- personal biography
+- LinkedIn URL
+- profile image upload
+- degrees with completion dates and URLs
+- certificates with completion dates
+- licenses with completion and expiry dates
+- professional courses with completion dates
+- employment history with start and end dates
+- add, edit, and delete support for repeated profile sections
 
 ### Blind Bidding System
 
-The bidding system allows alumni to compete for the daily "Alumni of the Day" featured slot using sponsorship funds. The system operates as a blind auction where bidders cannot see the current highest bid.
-
-Alumni can place a single bid per day for the following day's featured slot. The bid amount must not exceed their total available sponsorship funds from accepted offers. Once placed, bids can only be increased (not decreased) and can be cancelled entirely.
-
-Bid status feedback tells the alumni whether they are currently winning or not winning without revealing the actual highest bid amount. This feedback updates when other bids are placed or modified.
-
-At 6 PM London time each day, the automated winner selection process runs via node-cron. It identifies the highest non-cancelled active bid, marks it as won, marks all other bids for that date as lost, creates a featured alumni record for the following day, increments the winner's monthly feature count, updates sponsorship offer payment status for the winner, and sends email notifications to the winner and losing bidders.
-
-### Monthly Limit Enforcement
-
-Each alumni can be featured a maximum of 3 times per calendar month. If an alumni has attended a university alumni event (recorded via the attended_event flag), they are permitted a 4th appearance that month. The system checks this limit before allowing bid placement and prevents bidding when the limit is reached. Monthly counters reset at the beginning of each calendar month.
+- place bids without exposing the highest bid amount
+- current win/lose feedback without revealing competitor values
+- increase-only bid updates
+- cancellation support
+- monthly winner limit enforcement
+- event-attendance bonus path for a 4th monthly slot
+- automated winner selection for the next day at `6:00 PM Europe/London`
+- winner and loser email notifications
 
 ### Sponsorship Model
 
-Sponsors (professional course providers, licensing bodies, and certification organisations) offer monetary sponsorship to alumni to promote their credentials on the platform. Each sponsorship offer is linked to a specific credential (certificate, licence, or professional course) owned by the alumni.
+- sponsors can create offers for alumni credentials
+- alumni can accept or decline offers
+- accepted offers create available bidding balance
+- winning bids consume sponsorship balance using `remaining_amount`
+- only the amount actually spent on the winning bid is deducted
 
-Alumni can view, accept, or decline sponsorship offers. Accepted offers contribute to the alumni's available bidding funds. Sponsors are only charged (is_paid set to true) when the alumni wins the daily bid and their profile is displayed, ensuring a performance-based sponsorship model.
+### API Key Security and Usage Tracking
 
-The total available sponsorship funds for an alumni is calculated as the sum of all accepted and unpaid sponsorship offer amounts.
-
-### Developer API Key Management
-
-Users with the developer role can generate API keys for external application access. The raw API key is displayed only once at the time of creation. The key is hashed using SHA-256 before storage, meaning the raw key cannot be recovered from the database.
-
-Developers can view a list of their API keys showing creation date, active status, and last used timestamp. Keys can be revoked at any time, which sets is_active to false and records the revocation timestamp. Revoked keys immediately cease to authenticate.
-
-The usage statistics dashboard shows the number of API requests per key, endpoint access frequency, timestamps of access, and source IP addresses.
+- API key generation for developer access
+- raw key displayed once only
+- SHA-256 hash stored instead of raw key
+- key revocation support
+- per-key request usage logging
+- endpoint breakdown, timestamps, and IP tracking
 
 ### Public Developer API
 
-The public API provides a single primary endpoint for retrieving today's featured alumni profile. This endpoint is consumed by the augmented reality client and third-party developer applications.
+- `GET /api/v1/public/featured-alumni/today`
+- `GET /api/v1/public/featured-alumni/history`
+- Swagger/OpenAPI UI at `/api-docs`
 
-All API endpoints are documented with Swagger/OpenAPI 3.0 and served via an interactive UI at the /api-docs path. Documentation includes request and response schemas, authentication requirements, error response formats, and example payloads.
- 
----
+## API Documentation Summary
 
-## Api Documentation
+### Authentication modes
 
-### Authentication
+- Public developer API: `Authorization: Bearer <api_key>`
+- Internal web-to-API calls: `X-Internal-Secret: <secret>`
 
-```aiignore
-This need to Implemented
+### Public endpoints
+
+- `GET /api/v1/public/featured-alumni/today`
+- `GET /api/v1/public/featured-alumni/history`
+
+### Internal bidding endpoints
+
+- `POST /api/v1/bids`
+- `PUT /api/v1/bids/{id}`
+- `DELETE /api/v1/bids/{id}`
+- `GET /api/v1/bids/status`
+- `GET /api/v1/bids/history`
+- `GET /api/v1/bids/monthly-limit`
+- `POST /api/v1/bids/event-attendance`
+- `GET /api/v1/bids/balance`
+
+### Internal sponsorship endpoints
+
+- `POST /api/v1/sponsorships/offers`
+- `GET /api/v1/sponsorships/offers`
+- `PUT /api/v1/sponsorships/offers/{id}`
+- `GET /api/v1/sponsorships/balance`
+- `GET /api/v1/sponsorships/summary`
+
+### Internal API key endpoints
+
+- `POST /api/v1/api-keys`
+- `GET /api/v1/api-keys`
+- `GET /api/v1/api-keys/{id}/stats`
+- `DELETE /api/v1/api-keys/{id}`
+
+### Internal winner endpoints
+
+- `GET /api/v1/winners/today`
+- `GET /api/v1/winners/history`
+- `POST /api/v1/winners/trigger`
+- `GET /api/v1/winners/check`
+
+### Standard response shape
+
+Successful responses:
+
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "Operation completed successfully."
+}
 ```
 
-### Public Endpoints
+Error responses:
 
-```aiignore
-This need to Implemented
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Input validation failed.",
+    "details": []
+  }
+}
 ```
 
-### Bidding Endpoints (Internal Access)
+## Security Implementation
+
+Implemented protections include:
+
+- bcrypt password hashing
+- password strength validation
+- hashed verification and reset tokens
+- single-use token invalidation
+- bearer API key hashing and revocation
+- Helmet security headers on Express
+- explicit CORS configuration
+- CSRF protection on CodeIgniter forms
+- rate limiting for general, auth, and bidding endpoints
+- database-backed sessions
+- secure cookie defaults and session regeneration
+
+## Scheduled Tasks
+
+The Express API schedules:
+
+- daily winner selection at `18:00 Europe/London`
+- monthly cleanup trigger at midnight on the first day of each month
+
+## Testing and Verification
+
+Useful local checks:
+
+```bash
+cd codeigniter-app
+php spark migrate
+php spark serve --port 8080
 ```
-    This need to Implemented 
+
+```bash
+cd express-api
+npm run dev
 ```
 
-### Sponsorship Endpoints (Internal Access)
-```aiignore
-This need to Implemented
+Swagger:
+
+```text
+http://localhost:3000/api-docs
 ```
 
-### API Key Managment Endpoints (Internal Access)
-```aiignore
-This need to Implemented
-```
+## Known Limitations
 
-### Winner Endpoints (Internal Access)
-```aiignore
-This need to Implemented
-```
+- The UI is intentionally simple and server-rendered.
+- Some README screenshots or diagrams may need refreshing if the schema changes again.
+- Mailtrap sandbox can rate-limit back-to-back notification emails during local testing.
 
-### Response Format
-```aiignore
-This need to Implemented
-```
+## Troubleshooting
 
+### CodeIgniter cannot reach Express
 
+Check:
 
+- `INTERNAL_API_URL`
+- `INTERNAL_API_SECRET`
+- Express server is running on port `3000`
 
+### Swagger does not load
 
+Check:
 
+- Express server started successfully
+- visit `http://localhost:3000/api-docs`
 
+### Emails are not being delivered
 
+Check:
+
+- SMTP settings in both `.env` files
+- Mailtrap or SMTP provider credentials
+- API log output for rate-limit or SMTP errors
+
+### Bidding balance looks wrong
+
+Balance is based on:
+
+- accepted sponsorship offers
+- current `remaining_amount`
+- minus any reserved active bid amounts
+
+If old data was created before the partial-deduction logic was added, confirm the backfill has been applied.
