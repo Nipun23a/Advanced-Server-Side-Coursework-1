@@ -1,2 +1,78 @@
+# =============================================================================
+# Root .gitignore — Alumni Influencers Platform
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Environment files — NEVER commit these (contain secrets and credentials)
+# -----------------------------------------------------------------------------
+.env
+*.env
 express-api/.env
+codeigniter-app/.env
+
+# -----------------------------------------------------------------------------
+# OS generated files
+# -----------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# -----------------------------------------------------------------------------
+# IDE / Editor files
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/
+*.iml
+*.sublime-workspace
+*.sublime-project
+
+# -----------------------------------------------------------------------------
+# Express API
+# -----------------------------------------------------------------------------
+express-api/node_modules/
+express-api/src/logs/
+express-api/src/logs/*.log
+
+# -----------------------------------------------------------------------------
+# CodeIgniter App
+# -----------------------------------------------------------------------------
+codeigniter-app/vendor/
+codeigniter-app/writable/cache/*
+codeigniter-app/writable/logs/*
+codeigniter-app/writable/session/*
+codeigniter-app/writable/uploads/*
+codeigniter-app/writable/debugbar/*
+
+# Keep index.html placeholders in writable subdirs
+!codeigniter-app/writable/cache/index.html
+!codeigniter-app/writable/logs/index.html
+!codeigniter-app/writable/session/index.html
+!codeigniter-app/writable/uploads/index.html
+!codeigniter-app/writable/debugbar/index.html
+
+# User uploaded profile images
+codeigniter-app/public/uploads/
+
+# CodeIgniter sensitive config
 codeigniter-app/app/Config/Email.php
+
+# -----------------------------------------------------------------------------
+# Logs
+# -----------------------------------------------------------------------------
+*.log
+logs/
+
+# -----------------------------------------------------------------------------
+# Misc
+# -----------------------------------------------------------------------------
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
