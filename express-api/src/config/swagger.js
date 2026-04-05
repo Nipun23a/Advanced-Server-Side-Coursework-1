@@ -90,8 +90,13 @@ Authentication:
         }
     },
 
-    // IMPORTANT FIX HERE
-    apis: ["./src/routes/*.js"]
+    apis: [
+        "./src/routes/publicRoutes.js",
+        "./src/routes/sponsorshipRoutes.js",
+        "./src/routes/biddingRoutes.js",
+        "./src/routes/winnerRoutes.js"
+    ]
+
 };
 
 const swaggerSpec = swaggerJsDoc(swaggerOptions);

@@ -32,13 +32,16 @@ class ApiUsageLogModel {
     }
 
     static async getRecentRequests(apiKeyId, limit = 20) {
+        const parsedLimit = Number.parseInt(limit, 10);
+        const safeLimit = Number.isInteger(parsedLimit) && parsedLimit > 0 ? parsedLimit : 20;
         const [rows] = await pool.execute(
             `SELECT endpoint, http_method, source_ip, access_at
              FROM api_usage_logs
              WHERE api_key_id = ?
              ORDER BY access_at DESC
-                 LIMIT ?`,
-            [apiKeyId, limit]
+                 LIMIT ${safeLimit}`,
+            [apiKeyId]
+
         );
         return rows;
     }

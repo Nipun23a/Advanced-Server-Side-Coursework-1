@@ -6,7 +6,7 @@ class ApiKeyController{
     static async generateKey(req, res) {
         try {
             const userId = req.user?.id || req.internalUserId;
-            console.log(userId);
+            //console.log(userId);
             if (!userId) {
                 return sendError(
                     res,
@@ -44,7 +44,7 @@ class ApiKeyController{
     static async listKeys(req,res) {
         try {
             const userId = req.user?.id || req.internalUserId;
-            console.log(userId);
+            //console.log(userId);
             if (!userId) {
                 return sendError(
                     res,
@@ -101,7 +101,8 @@ class ApiKeyController{
     static async revokeKey(req,res){
         try{
             const keyId = parseInt(req.params.id);
-            const userId = req.body.user_id || req.internalUserId;
+            const userId = req.user?.id || req.body?.user_id || req.internalUserId;
+            console.log(userId);
             if (!userId) {
                 return sendError(
                     res,

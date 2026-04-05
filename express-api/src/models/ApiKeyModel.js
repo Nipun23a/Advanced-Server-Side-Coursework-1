@@ -49,7 +49,6 @@ class ApiKeyModel {
     }
 
     static async findByIdAndUser(keyId, userId) {
-        userId = 1;
         const [rows] = await pool.execute(
             'SELECT id, user_id, is_active, created_at, revoked_at FROM api_keys WHERE id = ? AND user_id = ?',
             [keyId, userId]

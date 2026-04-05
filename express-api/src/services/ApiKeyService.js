@@ -61,7 +61,7 @@ class ApiKeyService {
     }
 
     static async revokeKey(keyId,userId){
-        const key = await ApiKeyModel.findByIdAndUser(userId,keyId);
+        const key = await ApiKeyModel.findByIdAndUser(keyId,userId);
         if (!key){
             const error = new Error('API key not found');
             error.code = 'NOT_FOUND';

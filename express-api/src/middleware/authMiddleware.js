@@ -43,7 +43,7 @@ export const authenticateBearer = async (req,res,next) => {
                     u.email, u.role
              FROM api_keys ak
              JOIN users u ON ak.user_id = u.id
-             WHERE ak.hashed_key = ?`,
+             WHERE ak.key_hash = ?`,
         [tokenHash]
     );
     if (rows.length === 0){
