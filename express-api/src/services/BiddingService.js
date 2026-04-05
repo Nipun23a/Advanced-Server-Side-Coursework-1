@@ -48,6 +48,25 @@ class BiddingService {
         ].join("-");
     }
 
+    static getDateKeyFromValue(value) {
+        if (value === null || value === undefined) {
+            return null;
+        }
+
+        if (value instanceof Date) {
+            return this.formatDateKey(value.getFullYear(), value.getMonth() + 1, value.getDate());
+        }
+
+        const stringValue = String(value);
+        const match = stringValue.match(/(\\d{4})-(\\d{2})-(\\d{2})/);
+        if (!match) {
+            return null;
+        }
+
+        const [, year, month, day] = match;
+        return this.formatDateKey(year, month, day);
+    }
+
     static getTomorrowDateKeyInTimeZone(timezone) {
         const nowParts = this.getDatePartsInTimeZone(new Date(), timezone);
         const localDateAnchor = new Date(Date.UTC(nowParts.year, nowParts.month - 1, nowParts.day, 12, 0, 0));
@@ -197,9 +216,13 @@ class BiddingService {
             throw error;
         }
 
-        const bidDate = bid.bid_date instanceof Date
-            ? bid.bid_date.toISOString().split("T")[0]
-            : String(bid.bid_date).split("T")[0];
+        const bidDate = this.getDateKeyFromValue(bid.bid_date);
+        if (!bidDate) {
+            const error = new Error("Stored bid date is invalid.");
+            error.code = "INVALID_BID_DATE";
+            error.status = 400;
+            throw error;
+        }
 
         this.enforceTomorrowOnlyBidDate(bidDate);
         this.enforceTomorrowBidCutoff(bidDate);
