@@ -3,13 +3,13 @@ import { pool } from "../config/database.js";
 class BidModel {
 
     static async create(bidData) {
-        const { user_id, bid_amount, bid_date, sponsorship_total } = bidData;
+        const { user_id, bid_amount, bid_date } = bidData;
 
         const [result] = await pool.execute(
             `INSERT INTO bids
-             (user_id, bid_amount, bid_status, bid_date, is_cancelled, sponsorship_total, created_at, updated_at)
-             VALUES (?, ?, 'active', ?, false, ?, NOW(), NOW())`,
-            [user_id, bid_amount, bid_date, sponsorship_total]
+             (user_id, bid_amount, bid_status, bid_date, is_cancelled, created_at, updated_at)
+             VALUES (?, ?, 'active', ?, false,NOW(), NOW())`,
+            [user_id, bid_amount, bid_date]
         );
         return result;
     }
@@ -72,7 +72,7 @@ class BidModel {
 
     static async findHistoryByUser(userId,limit,offset) {
         const [rows] = await pool.execute(
-            `SELECT id, bid_amount, bid_status, bid_date, is_cancelled, sponsorship_total, created_at, updated_at
+            `SELECT id, bid_amount, bid_status, bid_date, is_cancelled, created_at, updated_at
              FROM bids WHERE user_id = ?
              ORDER BY created_at DESC
              LIMIT ? OFFSET ?`,
@@ -91,7 +91,7 @@ class BidModel {
 
     static async getMonthlyCount(userId, year, month) {
         const [rows] = await pool.execute(
-            `SELECT count, attended_event FROM monthly_feature_count
+            `SELECT count, attended_event FROM monthly_feature_counts
              WHERE user_id = ? AND year = ? AND month = ?`,
             [userId, year, month]
         );
@@ -101,8 +101,9 @@ class BidModel {
     static async getAvailableSponsorshipBalance(userId) {
         const [rows] = await pool.execute(
             `SELECT COALESCE(SUM(offer_amount), 0) AS available_balance
-             FROM sponsorship_offers
-             WHERE user_id = ? AND status = 'accepted' AND is_paid = false`,
+             FROM sponsorship_offers so
+             JOIN alumni_profiles ap ON so.alumni_id = ap.id
+             WHERE ap.user_id = ? AND so.status = 'accepted' AND so.is_paid = false`,
             [userId]
         );
         return parseFloat(rows[0].available_balance);

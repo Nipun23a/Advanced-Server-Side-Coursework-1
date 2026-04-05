@@ -62,7 +62,7 @@ class BiddingController {
     static async cancelBid(req, res) {
         try {
             const bidId = parseInt(req.params.id);
-            const userId = req.body.user_id || req.internalUserId;
+            const userId = req.body?.user_id || parseInt(req.query.user_id) || req.internalUserId;
 
             if (!userId) {
                 return sendError(res, 'MISSING_USER_ID', 'User ID is required.', 400);

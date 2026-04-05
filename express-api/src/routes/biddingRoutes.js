@@ -152,6 +152,17 @@ router.put(
  *         required: true
  *         schema:
  *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [user_id]
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 example: 1
  *     responses:
  *       200:
  *         description: Bid cancelled successfully

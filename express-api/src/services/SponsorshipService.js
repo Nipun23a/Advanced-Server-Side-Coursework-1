@@ -52,7 +52,9 @@ class SponsorshipService {
     }
     static async createOffer(data) {
         const { sponsor_id, user_id, sponsorable_id, sponsorable_type, offer_amount } = data;
-        const validTypes = ['certificate', 'licence', 'professional_course'];
+        const normalizedSponsorableType = SponsorshipOfferModel.normalizeSponsorableType(sponsorable_type);
+        const validTypes = ['certificate', 'license', 'licence', 'professional_course'];
+
         if (!validTypes.includes(sponsorable_type)) {
             const error = new Error(`Invalid sponsorable type. Must be one of: ${validTypes.join(', ')}`);
             error.code = 'INVALID_SPONSORABLE_TYPE';
@@ -66,7 +68,16 @@ class SponsorshipService {
             error.status = 404;
             throw error;
         }
-        const credentialName = await SponsorshipOfferModel.getCredentialName(sponsorable_type, sponsorable_id);
+        const alumniProfileId = await SponsorshipOfferModel.findAlumniProfileIdByUserId(user_id);
+
+        if (!alumniProfileId) {
+            const error = new Error('Alumni profile not found for the supplied user_id.');
+            error.code = 'ALUMNI_PROFILE_NOT_FOUND';
+            error.status = 404;
+            throw error;
+        }
+
+        const credentialName = await SponsorshipOfferModel.getCredentialName(normalizedSponsorableType, sponsorable_id);
         if (!credentialName) {
             const error = new Error('The specified credential does not exist.');
             error.code = 'CREDENTIAL_NOT_FOUND';
@@ -75,10 +86,10 @@ class SponsorshipService {
         }
 
         const result = await SponsorshipOfferModel.create({
-            sponsor_id,
-            user_id,
+            sponsorship_id: sponsor_id,
+            alumni_id: alumniProfileId,
             sponsorable_id,
-            sponsorable_type,
+            sponsorable_type: normalizedSponsorableType,
             offer_amount,
         });
 
@@ -92,7 +103,7 @@ class SponsorshipService {
             sponsor_id,
             sponsor_name: sponsor.sponsor_name,
             user_id,
-            sponsorable_type,
+            sponsorable_type: normalizedSponsorableType,
             sponsorable_id,
             credential_name: credentialName,
             offer_amount,

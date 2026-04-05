@@ -11,7 +11,7 @@ class SponsorModel {
 
     static async findByName(sponsorName) {
         const [rows] = await pool.execute(
-            'SELECT * FROM sponsors WHERE name = ?',
+            'SELECT * FROM sponsors WHERE sponsor_name = ?',
             [sponsorName]
         );
         return rows.length > 0 ? rows[0] : null;

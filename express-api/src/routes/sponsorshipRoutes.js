@@ -21,7 +21,7 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [sponsor_name, sponsor_type, website_url]
+ *             required: [user_id,sponsor_name, sponsor_type, website_url]
  *             properties:
  *               sponsor_name:
  *                 type: string

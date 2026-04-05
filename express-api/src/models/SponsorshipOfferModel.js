@@ -1,10 +1,35 @@
 import { pool } from '../config/database.js';
 
 class SponsorshipOfferModel {
-    static async create(data) {
-        const { sponsorship_id, alumni_id, sponsorable_id, sponsorable_type, offer_amount } = data;
+    static async findAlumniProfileIdByUserId(userId) {
+        const [rows] = await pool.execute(
+            'SELECT id FROM alumni_profiles WHERE user_id = ? LIMIT 1',
+            [userId]
+        );
 
-        if (!sponsorship_id || !alumni_id || !offer_amount) {
+        return rows.length > 0 ? rows[0].id : null;
+    }
+
+    static async create(data) {
+        const {
+            sponsorship_id,
+            alumni_id,
+            sponsor_id,
+            user_id,
+            sponsorable_id,
+            sponsorable_type,
+            offer_amount,
+        } = data;
+
+        const normalizedSponsorshipId = sponsorship_id || sponsor_id;
+        let normalizedAlumniId = alumni_id;
+
+        if (!normalizedAlumniId && user_id) {
+            normalizedAlumniId = await this.findAlumniProfileIdByUserId(user_id);
+        }
+
+
+        if (!normalizedSponsorshipId || !normalizedAlumniId || !offer_amount) {
             throw new Error('Missing required sponsorship fields');
         }
 
@@ -12,7 +37,7 @@ class SponsorshipOfferModel {
             `INSERT INTO sponsorship_offers
              (sponsorship_id, alumni_id, sponsorable_id, sponsorable_type, offer_amount, status, is_paid, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, 'pending', false, NOW(), NOW())`,
-            [sponsorship_id, alumni_id, sponsorable_id, sponsorable_type, offer_amount]
+            [normalizedSponsorshipId, normalizedAlumniId, sponsorable_id, sponsorable_type, offer_amount]
         );
 
         return result;
@@ -136,10 +161,24 @@ class SponsorshipOfferModel {
         return result.affectedRows;
     }
 
+    static normalizeSponsorableType(sponsorableType) {
+        if (!sponsorableType) {
+            return null;
+        }
+
+        if (sponsorableType === 'licence') {
+            return 'license';
+        }
+
+        return sponsorableType;
+    }
+
+
     static async getCredentialName(sponsorableType, sponsorableId) {
+        const normalizedType = this.normalizeSponsorableType(sponsorableType);
         let query = '';
 
-        switch (sponsorableType) {
+        switch (normalizedType) {
             case 'certificate':
                 query = 'SELECT certificate_name AS name FROM certificates WHERE id = ?';
                 break;

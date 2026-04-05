@@ -48,7 +48,6 @@ class BiddingService {
             user_id: userId,
             bid_amount: bidAmount,
             bid_date: bidDate,
-            sponsorship_total: availableBalance,
         });
 
         logger.info(`Bid placed: bid_id=${result.insertId}, user_id=${userId}, amount=${bidAmount}, date=${bidDate}`);
@@ -59,7 +58,6 @@ class BiddingService {
             bid_amount: bidAmount,
             bid_date: bidDate,
             bid_status: 'active',
-            sponsorship_total: availableBalance,
         };
     }
 
