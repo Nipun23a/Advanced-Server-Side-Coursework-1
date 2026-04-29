@@ -305,7 +305,7 @@ class AuthController extends BaseController
         $password = $this->request->getPost('password');
 
         if (! $this->isValidHexToken($rawToken)) {
-            return redirect() -> to('/auth/forgot_password')
+            return redirect() -> to('/auth/forgot-password')
                 ->with('error','Password reset link is invalid or has expired. Please request a new password reset link.');
         }
 
@@ -316,7 +316,7 @@ class AuthController extends BaseController
 
         $tokenRecord = $this -> resetTokenModel -> validateUserTokens($rawToken);
         if (! $tokenRecord){
-            return redirect() -> to('/auth/forgot_password')
+            return redirect() -> to('/auth/forgot-password')
                 ->with('error','Password reset link is invalid or has expired. Please request a new password reset link.');
         }
 
