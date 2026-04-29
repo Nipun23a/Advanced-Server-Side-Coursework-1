@@ -8,27 +8,24 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        $data = [
-            [
-                'email' => 'developer@example.com',
-                'password_hash' => password_hash('123456', PASSWORD_DEFAULT),
-                'role' => 'developer',
-                'is_email_verified' => 1,
-            ],
-            [
-                'email' => 'admin@example.com',
-                'password_hash' => password_hash('123456', PASSWORD_DEFAULT),
-                'role' => 'admin',
-                'is_email_verified' => 1,
-            ],
-            [
-                'email' => 'alumni@example.com',
-                'password_hash' => password_hash('123456', PASSWORD_DEFAULT),
-                'role' => 'alumni',
-                'is_email_verified' => 1,
-            ],
+        $users = [
+            ['email' => 'developer@example.com', 'role' => 'developer'],
+            ['email' => 'admin@example.com',     'role' => 'admin'],
+            ['email' => 'alumni1@example.com',   'role' => 'alumni'],
+            ['email' => 'alumni2@example.com',   'role' => 'alumni'],
+            ['email' => 'alumni3@example.com',   'role' => 'alumni'],
         ];
 
-        $this->db->table('users')->insertBatch($data);
+        foreach ($users as $user) {
+            $exists = $this->db->table('users')->where('email', $user['email'])->countAllResults();
+            if (! $exists) {
+                $this->db->table('users')->insert([
+                    'email'             => $user['email'],
+                    'password_hash'     => password_hash('password123', PASSWORD_DEFAULT),
+                    'role'              => $user['role'],
+                    'is_email_verified' => 1,
+                ]);
+            }
+        }
     }
 }
