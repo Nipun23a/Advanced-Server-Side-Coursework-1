@@ -65,7 +65,7 @@ class ApiUsageLogModel {
             `SELECT endpoint, http_method, source_ip, access_at
              FROM api_usage_logs
              WHERE api_key_id = ? AND DATE(access_at) BETWEEN ? AND ?
-             ORDER BY accessed_at DESC`,
+             ORDER BY access_at DESC`,
             [apiKeyId, startDate, endDate]
         );
         return rows;

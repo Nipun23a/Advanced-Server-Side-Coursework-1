@@ -1,10 +1,10 @@
-import {pool} from "../config/database.js";
+import { pool } from "../config/database.js";
 
 class FeatureAlumniModel {
-    static async create(userId, bidId, featuredDate,connection = null) {
+    static async create(userId, bidId, featuredDate, connection = null) {
         const db = connection || pool;
         const [result] = await db.execute(
-            'INSERT INTO featured_alumni (user_id, bid_id, featured_at, created_at) VALUES (?, ?,?,NOW())',
+            'INSERT INTO featured_alumni (user_id, bid_id, featured_at, created_at) VALUES (?, ?, ?, NOW())',
             [userId, bidId, featuredDate]
         );
         return result;
@@ -40,33 +40,33 @@ class FeatureAlumniModel {
         return rows.length > 0 ? rows[0] : null;
     }
 
-    static async fetchAllCredentials(userId){
-        const [degrees,certificates,licences,courses,employment] = await Promise.all([
+    static async fetchAllCredentials(userId) {
+        const [degrees, certificates, licenses, courses, employment] = await Promise.all([
             pool.execute(
                 'SELECT id, degree_name, institution_url, completion_date FROM degrees WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
                 [userId]
             ),
             pool.execute(
-                'SELECT id, certificate_name, provider_url, completion_date FROM certificates WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
+                'SELECT id, certificate_name, issuer_name AS provider_url, completion_date FROM certificates WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
                 [userId]
             ),
             pool.execute(
-                'SELECT id, license_name, provider_url, completion_date, expiry_date FROM licences WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
+                'SELECT id, license_name, license_url AS provider_url, completion_date, expiration_date AS expiry_date FROM licenses WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
                 [userId]
             ),
             pool.execute(
-                'SELECT id, course_name, provider_url, completion_date, end_date FROM professional_courses WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
+                'SELECT id, course_name, provider_url, completion_date, NULL AS end_date FROM professional_courses WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
                 [userId]
             ),
             pool.execute(
-                'SELECT id, company_name, role, start_date, end_date FROM employment_history WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
+                'SELECT id, company_name, industry_sector, job_title AS role, start_date, end_date FROM employment_history WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
                 [userId]
             ),
         ]);
         return {
             degrees: degrees[0],
             certificates: certificates[0],
-            licences: licences[0],
+            licences: licenses[0],
             professional_courses: courses[0],
             employment_history: employment[0],
         };
@@ -151,10 +151,28 @@ class FeatureAlumniModel {
     }
 
     static async incrementMonthlyCount(userId, year, month, connection) {
+        const [existingRows] = await connection.execute(
+            `SELECT id
+             FROM monthly_feature_counts
+             WHERE user_id = ? AND year = ? AND month = ?
+             ORDER BY id DESC
+             LIMIT 1`,
+            [userId, year, month]
+        );
+
+        if (existingRows.length > 0) {
+            await connection.execute(
+                `UPDATE monthly_feature_counts
+                 SET count = count + 1
+                 WHERE id = ?`,
+                [existingRows[0].id]
+            );
+            return;
+        }
+
         await connection.execute(
             `INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event)
-             VALUES (?, ?, ?, 1, false)
-             ON DUPLICATE KEY UPDATE count = count + 1`,
+             VALUES (?, ?, ?, 1, false)`,
             [userId, year, month]
         );
     }

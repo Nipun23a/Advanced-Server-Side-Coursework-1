@@ -1,4 +1,4 @@
-import{pool} from "../config/database.js";
+import { pool } from "../config/database.js";
 
 class MonthlyFeatureCountModel {
     static async findByUserAndMonth(userId, year, month) {
@@ -25,18 +25,57 @@ class MonthlyFeatureCountModel {
 
     static async increamentCount(userId, year, month, connection = null) {
         const db = connection || pool;
+        const [existingRows] = await db.execute(
+            `SELECT id
+             FROM monthly_feature_counts
+             WHERE user_id = ? AND year = ? AND month = ?
+             ORDER BY id DESC
+             LIMIT 1`,
+            [userId, year, month]
+        );
+
+        if (existingRows.length > 0) {
+            const [result] = await db.execute(
+                `UPDATE monthly_feature_counts
+                 SET count = count + 1
+                 WHERE id = ?`,
+                [existingRows[0].id]
+            );
+            return result.affectedRows > 0;
+        }
+
         const [result] = await db.execute(
             `INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event)
-             VALUES (?, ?, ?, 1, false)
-             ON DUPLICATE KEY UPDATE count = count + 1`,
+             VALUES (?, ?, ?, 1, false)`,
             [userId, year, month]
         );
         return result.affectedRows > 0;
     }
 
-    static async markEventAttended(userId, year, month, connection = null){
-        const [result] = await (connection || pool).execute(
-            'INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event) VALUES (?, ?, ?, 0, true) ON DUPLICATE KEY UPDATE attended_event = true',
+    static async markEventAttended(userId, year, month, connection = null) {
+        const db = connection || pool;
+        const [existingRows] = await db.execute(
+            `SELECT id
+             FROM monthly_feature_counts
+             WHERE user_id = ? AND year = ? AND month = ?
+             ORDER BY id DESC
+             LIMIT 1`,
+            [userId, year, month]
+        );
+
+        if (existingRows.length > 0) {
+            const [result] = await db.execute(
+                `UPDATE monthly_feature_counts
+                 SET attended_event = true
+                 WHERE id = ?`,
+                [existingRows[0].id]
+            );
+            return result.affectedRows > 0;
+        }
+
+        const [result] = await db.execute(
+            `INSERT INTO monthly_feature_counts (user_id, year, month, count, attended_event)
+             VALUES (?, ?, ?, 0, true)`,
             [userId, year, month]
         );
         return result.affectedRows > 0;
