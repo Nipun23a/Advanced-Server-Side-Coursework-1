@@ -66,7 +66,6 @@ const startCronJobs = () => {
         timezone:process.env.BID_TIMEZONE || 'Europe/London',
         scheduled:true,
     });
-    logger.info('CRON: Monthly cleanup scheduled — midnight 1st of each month Europe/London');
 }
 
 export default startCronJobs;

@@ -237,7 +237,7 @@ class AuthController extends BaseController
 
     public function showForgotPassword()
     {
-        return view ('auth/forgot-password');
+        return view ('auth/forgot_password');
     }
 
     public function forgotPassword()
@@ -274,7 +274,7 @@ class AuthController extends BaseController
                 ->with('error','Password reset link is invalid or has expired. Please request a new password reset link.');
         }
 
-        return view('auth/reset-password',[
+        return view('auth/reset_password',[
             'token' => $rawToken
         ]);
     }

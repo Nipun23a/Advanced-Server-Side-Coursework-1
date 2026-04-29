@@ -1187,5 +1187,3 @@
 {"code":"NO_ACTIVE_BID","level":"error","message":"BidController.getBidStatus error: No active bid found.","service":"alumni-influencers-api","timestamp":"2026-04-05 21:14:35"}
 {"apiKeyId":null,"authType":"internal","ip":"::1","level":"http","message":"API Request","method":"GET","responseTime":"2ms","service":"alumni-influencers-api","status":404,"timestamp":"2026-04-05 21:14:35","url":"/api/v1/bids/status?user_id=3","userAgent":"unknown"}
 {"apiKeyId":null,"authType":"internal","ip":"::1","level":"http","message":"API Request","method":"GET","responseTime":"3ms","service":"alumni-influencers-api","status":200,"timestamp":"2026-04-05 21:14:35","url":"/api/v1/bids/history?user_id=3&page=1&limit=20","userAgent":"unknown"}
-{"level":"info","message":"=== CRON: Daily winner selection starting ===","service":"alumni-influencers-api","timestamp":"2026-04-05 22:30:00"}
-{"level":"warn","message":"CRON: Winner already selected for 2026-04-06. Skipping.","service":"alumni-influencers-api","timestamp":"2026-04-05 22:30:00"}
