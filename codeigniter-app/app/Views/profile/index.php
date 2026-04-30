@@ -88,24 +88,26 @@
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" value="">
                 <div class="row g-2">
-                    <div class="col-md-4"><input class="form-control" type="text" name="certificate_name" placeholder="Certificate name"></div>
-                    <div class="col-md-4"><input class="form-control" type="text" name="issuer_name" placeholder="Issuer name"></div>
-                    <div class="col-md-3"><input class="form-control" type="date" name="completion_date"></div>
+                    <div class="col-md-3"><input class="form-control" type="text" name="certificate_name" placeholder="Certificate name"></div>
+                    <div class="col-md-3"><input class="form-control" type="text" name="issuer_name" placeholder="Issuer name"></div>
+                    <div class="col-md-3"><input class="form-control" type="url" name="certificate_url" placeholder="Course page URL"></div>
+                    <div class="col-md-2"><input class="form-control" type="date" name="completion_date"></div>
                     <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">Add</button></div>
                 </div>
             </form>
             <table class="table table-sm">
-                <thead><tr><th>Certificate</th><th>Issuer</th><th>Completion Date</th><th></th></tr></thead>
+                <thead><tr><th>Certificate</th><th>Issuer</th><th>Course URL</th><th>Completion Date</th><th></th></tr></thead>
                 <tbody>
                 <?php foreach ($certificates as $item): ?>
                     <tr>
-                        <td colspan="4">
+                        <td colspan="5">
                             <form method="post" action="/profile/certificates" class="row g-2 align-items-center">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="id" value="<?= $item['id'] ?>">
                                 <div class="col-md-3"><input class="form-control form-control-sm" type="text" name="certificate_name" value="<?= esc($item['certificate_name']) ?>"></div>
-                                <div class="col-md-4"><input class="form-control form-control-sm" type="text" name="issuer_name" value="<?= esc($item['issuer_name']) ?>"></div>
-                                <div class="col-md-3"><input class="form-control form-control-sm" type="date" name="completion_date" value="<?= esc($item['completion_date']) ?>"></div>
+                                <div class="col-md-2"><input class="form-control form-control-sm" type="text" name="issuer_name" value="<?= esc($item['issuer_name']) ?>"></div>
+                                <div class="col-md-3"><input class="form-control form-control-sm" type="url" name="certificate_url" value="<?= esc($item['certificate_url'] ?? '') ?>"></div>
+                                <div class="col-md-2"><input class="form-control form-control-sm" type="date" name="completion_date" value="<?= esc($item['completion_date']) ?>"></div>
                                 <div class="col-md-1"><button class="btn btn-sm btn-outline-primary w-100" type="submit">Save</button></div>
                             </form>
                         </td>
@@ -119,7 +121,7 @@
                         </td>
                     </tr>
                 <?php endforeach; ?>
-                <?php if (empty($certificates)): ?><tr><td colspan="4">No certificates added yet.</td></tr><?php endif; ?>
+                <?php if (empty($certificates)): ?><tr><td colspan="5">No certificates added yet.</td></tr><?php endif; ?>
                 </tbody>
             </table>
         </div>

@@ -121,6 +121,9 @@
                         <div class="border rounded p-2" style="font-size:.85rem">
                             <div class="fw-semibold"><?= esc($cert['certificate_name'] ?? '') ?></div>
                             <div class="text-muted"><?= esc($cert['issuer_name'] ?? '') ?> · <?= esc($cert['completion_date'] ?? '') ?></div>
+                            <?php if (! empty($cert['certificate_url'])): ?>
+                                <a href="<?= esc($cert['certificate_url']) ?>" target="_blank" rel="noopener" style="font-size:.78rem">View Course</a>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>

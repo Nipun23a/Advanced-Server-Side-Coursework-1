@@ -126,9 +126,10 @@ class ProfileController extends BaseController
             [
                 'certificate_name' => 'required|max_length[100]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
                 'issuer_name' => 'required|max_length[256]|regex_match[/^[A-Za-z0-9&.,()\\-\\/\'\\s]+$/]',
+                'certificate_url' => 'required|valid_url_strict|max_length[256]',
                 'completion_date' => 'required|valid_date[Y-m-d]',
             ],
-            ['certificate_name', 'issuer_name', 'completion_date'],
+            ['certificate_name', 'issuer_name', 'certificate_url', 'completion_date'],
             'Certificate saved successfully.'
         );
     }
@@ -279,7 +280,7 @@ class ProfileController extends BaseController
         }
 
         return match ($field) {
-            'institution_url', 'license_url', 'provider_url' => $this->sanitizeUrl($value),
+            'institution_url', 'license_url', 'provider_url', 'certificate_url' => $this->sanitizeUrl($value),
             'completion_date', 'expiration_date', 'start_date', 'end_date' => trim($value),
             default => $this->sanitizeText($value, 256),
         };

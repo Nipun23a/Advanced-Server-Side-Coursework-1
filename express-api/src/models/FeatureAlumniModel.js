@@ -47,7 +47,7 @@ class FeatureAlumniModel {
                 [userId]
             ),
             pool.execute(
-                'SELECT id, certificate_name, issuer_name AS provider_url, completion_date FROM certificates WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
+                'SELECT id, certificate_name, issuer_name, certificate_url, completion_date FROM certificates WHERE profile_id = (SELECT id FROM alumni_profiles WHERE user_id = ?)',
                 [userId]
             ),
             pool.execute(
