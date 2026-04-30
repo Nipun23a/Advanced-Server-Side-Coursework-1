@@ -29,20 +29,41 @@ const router = express.Router();
  *               user_id:
  *                 type: integer
  *                 example: 5
+ *               client_type:
+ *                 type: string
+ *                 enum: [analytics_dashboard, ar_app, third_party]
+ *                 description: >
+ *                   Optional. When provided, permissions and scope are automatically
+ *                   assigned based on the client type. Omit for a plain key with no scope.
+ *                 example: ar_app
  *     responses:
  *       201:
  *         description: API key generated successfully
  *         content:
  *           application/json:
- *             example:
- *               success: true
- *               data:
- *                 key_id: 1
- *                 key: "alum_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2"
- *                 warning: "Save this key now. You will not be able to see it again!"
- *               message: "API key generated. Save this key — it cannot be retrieved again."
+ *             examples:
+ *               plain:
+ *                 summary: Key without scope
+ *                 value:
+ *                   success: true
+ *                   data:
+ *                     key_id: 1
+ *                     key: "alum_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2"
+ *                     warning: "Save this key now. You will not be able to see it again!"
+ *                   message: "API key generated successfully. Save this key - it cannot be retrieved."
+ *               scoped:
+ *                 summary: Key with scope
+ *                 value:
+ *                   success: true
+ *                   data:
+ *                     key_id: 2
+ *                     key: "alum_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2"
+ *                     client_type: "ar_app"
+ *                     permissions: ["read:alumni_of_day"]
+ *                     warning: "Save this key now. You will not be able to see it again!"
+ *                   message: "API key generated successfully. Save this key - it cannot be retrieved."
  *       400:
- *         description: Missing user_id
+ *         description: Missing user_id or invalid client_type
  *       401:
  *         description: Internal authentication required
  */

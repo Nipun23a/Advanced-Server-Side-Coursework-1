@@ -1,11 +1,44 @@
 
 import ApiKeyModel from "../models/ApiKeyModel.js";
+import ApiKeyPermissionModel from "../models/ApiKeyPermissionModel.js";
 import ApiUsageLogModel from "../models/ApiUsageLogModel.js";
 import TokenGeneration from "../utils/tokenGeneration.js";
 import {logger} from "../config/logger.js";
 
 
 class ApiKeyService {
+    static async generateKeyWithScope(userId, clientType) {
+        const validTypes = ['analytics_dashboard', 'ar_app', 'third_party'];
+        if (!validTypes.includes(clientType)) {
+            const error = new Error(`Invalid client type. Must be one of: ${validTypes.join(', ')}`);
+            error.code = 'INVALID_CLIENT_TYPE';
+            error.status = 400;
+            throw error;
+        }
+
+        const rawKey = TokenGeneration.generateAPIKey();
+        const keyHash = TokenGeneration.hashToken(rawKey);
+        const result = await ApiKeyModel.create(userId, keyHash);
+        const apiKeyId = result.insertId;
+
+        const permissions = ApiKeyPermissionModel.getPermissionsForClientType(clientType);
+        await ApiKeyPermissionModel.assignPermissions(apiKeyId, permissions);
+        await ApiKeyPermissionModel.assignScope(apiKeyId, clientType);
+
+        logger.info(
+            `API key generated with scope: key_id=${apiKeyId}, user_id=${userId}, ` +
+            `client_type=${clientType}, permissions=[${permissions.join(', ')}]`
+        );
+
+        return {
+            key_id: apiKeyId,
+            key: rawKey,
+            client_type: clientType,
+            permissions,
+            warning: 'Save this key now. You will not be able to see it again!',
+        };
+    }
+
     static async generateKey(userId){
         const rawKey = TokenGeneration.generateAPIKey();
         const keyHash = TokenGeneration.hashToken(rawKey);
