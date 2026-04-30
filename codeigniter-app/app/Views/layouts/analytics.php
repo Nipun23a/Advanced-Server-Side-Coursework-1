@@ -146,7 +146,13 @@
 <!-- ================================================================ -->
 <!-- SIDEBAR                                                           -->
 <!-- ================================================================ -->
-<?php $sidebarRole = session()->get('user_role'); ?>
+<?php
+$sidebarRole   = session()->get('user_role');
+$isLoggedIn    = (bool) session()->get('is_logged_in');
+$currentUri    = uri_string();
+$isAuthRoute   = $currentUri === '' || str_starts_with($currentUri, 'auth');
+?>
+<?php if ($isLoggedIn): ?>
 <nav id="sidebar">
     <div class="sidebar-brand">
         <i class="bi bi-mortarboard-fill me-2"></i>
@@ -295,13 +301,15 @@
 
     </ul>
 </nav>
+<?php endif; ?>
 
 <!-- ================================================================ -->
 <!-- MAIN CONTENT                                                      -->
 <!-- ================================================================ -->
-<div id="main-content">
+<div id="main-content" <?= $isLoggedIn ? '' : 'style="margin-left:0"' ?>>
 
     <!-- Top Bar -->
+    <?php if (! $isAuthRoute): ?>
     <div id="topbar">
         <div>
             <span class="text-muted" style="font-size:0.85rem;">University of Eastminster</span>
@@ -314,6 +322,7 @@
             </span>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- Flash Messages -->
     <div class="px-4 pt-3">

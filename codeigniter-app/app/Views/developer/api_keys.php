@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend('layouts/analytics') ?>
 
 <?= $this->section('content') ?>
 
@@ -31,7 +31,30 @@
             </div>
         </div>
 
-        <button class="btn btn-primary mb-3" onclick="createKey()">Generate New Key</button>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Generate New API Key</h5>
+                <p class="text-muted mb-3">
+                    Select the client type first. Permissions are assigned automatically from this choice.
+                </p>
+
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="clientType" class="form-label">Client type</label>
+                        <select id="clientType" class="form-select">
+                            <option value="analytics_dashboard">Analytics Dashboard</option>
+                            <option value="ar_app">AR App</option>
+                            <option value="third_party">Third Party</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="clientTypeHelp" class="small text-muted"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" onclick="createKey()">Generate New Key</button>
+            </div>
+        </div>
 
         <ul id="keyList" class="list-group"></ul>
     </div>
@@ -42,6 +65,48 @@
 
     <script>
         let secretConfigured = false;
+        const clientTypeMeta = {
+            analytics_dashboard: {
+                label: 'Analytics Dashboard',
+                permissions: ['read:alumni', 'read:analytics', 'read:export'],
+            },
+            ar_app: {
+                label: 'AR App',
+                permissions: ['read:alumni_of_day'],
+            },
+            third_party: {
+                label: 'Third Party',
+                permissions: ['read:alumni_of_day'],
+            },
+        };
+
+        function getClientTypeMeta(clientType) {
+            return clientTypeMeta[clientType] || {
+                label: clientType || 'Unscoped',
+                permissions: [],
+            };
+        }
+
+        function renderPermissionBadges(permissions) {
+            if (!permissions || permissions.length === 0) {
+                return '<span class="badge bg-secondary">No permissions</span>';
+            }
+
+            return permissions
+                .map(permission => `<span class="badge bg-light text-dark border me-1">${permission}</span>`)
+                .join('');
+        }
+
+        function updateClientTypeHelp() {
+            const select = document.getElementById('clientType');
+            const help = document.getElementById('clientTypeHelp');
+            const meta = getClientTypeMeta(select.value);
+
+            help.innerHTML = `
+                <strong>${meta.label}</strong><br>
+                Permissions: ${meta.permissions.join(', ')}
+            `;
+        }
 
         function updateSecretStatus(data) {
             const status = document.getElementById('secretStatus');
@@ -133,6 +198,8 @@
                     ? `<span class="badge bg-success ms-2">Active</span>`
                     : `<span class="badge bg-danger ms-2">Revoked</span>`;
 
+                const clientType = key.client_type || 'unscoped';
+                const meta = getClientTypeMeta(key.client_type);
                 const revokeButton = key.is_active
                     ? `<button class="btn btn-danger btn-sm ms-2" onclick="deleteKey(${key.id})">Revoke</button>`
                     : '';
@@ -148,6 +215,11 @@
                 <div>
                     <strong>ID: ${key.id}</strong>
                     ${statusBadge}
+                    <div class="mt-2">
+                        <span class="badge bg-primary-subtle text-primary-emphasis border">${meta.label}</span>
+                    </div>
+                    <div class="small text-muted mt-1">Stored scope: ${clientType}</div>
+                    <div class="mt-2">${renderPermissionBadges(key.permissions)}</div>
                 </div>
                 <div>
                     ${usageButton}
@@ -174,13 +246,30 @@
                 }
             }
 
-            const res = await fetch('/api/developer/api-keys', { method: 'POST' });
+            const clientType = document.getElementById('clientType').value;
+            const res = await fetch('/api/developer/api-keys', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ client_type: clientType }),
+            });
             const data = await res.json();
 
             if (data.success && data.data) {
-                alert("Your API Key:\n" + data.data.key + "\n\nSave it securely. You won't see it again.");
+                const meta = getClientTypeMeta(data.data.client_type || clientType);
+                const permissions = (data.data.permissions || meta.permissions).join(', ');
+
+                alert(
+                    "Your API Key:\n" +
+                    data.data.key +
+                    "\n\nClient Type: " + meta.label +
+                    "\nStored Scope: " + (data.data.client_type || clientType) +
+                    "\nPermissions: " + permissions +
+                    "\n\nSave it securely. You won't see it again."
+                );
             } else {
-                alert("Failed to generate key");
+                alert(data.message || "Failed to generate key");
             }
 
             loadKeys();
@@ -195,6 +284,9 @@
         }
 
         async function init() {
+            updateClientTypeHelp();
+            document.getElementById('clientType').addEventListener('change', updateClientTypeHelp);
+
             try {
                 await loadSecretStatus();
             } catch (error) {
