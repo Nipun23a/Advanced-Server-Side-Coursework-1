@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import {helmetConfig} from "./src/middleware/helmet.js";
 import {generalLimiter,biddingLimiter,authLimiter} from "./src/middleware/rateLimiter.js";
 
