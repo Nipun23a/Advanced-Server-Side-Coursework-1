@@ -137,6 +137,7 @@ class AnalyticsModel {
         const { limit = 10 } = filters;
         const { conditions, params: degreeParams } = buildDegreeFilterParts('d', filters);
         const params = [...degreeParams];
+        const safeLimit = Math.max(1, parseInt(limit, 10) || 10);
 
         let query = `
             SELECT
@@ -163,9 +164,8 @@ class AnalyticsModel {
         query += `
             GROUP BY eh.company_name
             ORDER BY value DESC
-            LIMIT ?
+            LIMIT ${safeLimit}
         `;
-        params.push(parseInt(limit, 10));
 
         const [rows] = await pool.execute(query, params);
 
@@ -322,7 +322,9 @@ class AnalyticsModel {
 
     static async getAlumniBrowse(filters = {}) {
         const { programme, graduationYear, sector, page = 1, limit = 20 } = filters;
-        const offset = (page - 1) * limit;
+        const safePage = Math.max(1, parseInt(page, 10) || 1);
+        const safeLimit = Math.max(1, parseInt(limit, 10) || 20);
+        const offset = (safePage - 1) * safeLimit;
         const params = [];
         let whereClause = `
             FROM alumni_profiles ap
@@ -410,9 +412,8 @@ class AnalyticsModel {
             ${selectClause}
             ${whereClause}
             ORDER BY ap.id DESC
-            LIMIT ? OFFSET ?
+            LIMIT ${safeLimit} OFFSET ${offset}
         `;
-        params.push(parseInt(limit, 10), offset);
 
         const [rows] = await pool.execute(query, params);
 
@@ -422,14 +423,14 @@ class AnalyticsModel {
             JOIN users u ON ap.user_id = u.id
             ${whereClause.replace(/^\s*FROM alumni_profiles ap\s+JOIN users u ON ap\.user_id = u\.id\s+/m, '')}
         `;
-        const countParams = params.slice(0, -2);
+        const countParams = [...params];
         const [countRows] = await pool.execute(countQuery, countParams);
 
         return {
             alumni: rows,
             total: countRows[0]?.total || 0,
-            page: parseInt(page, 10),
-            limit: parseInt(limit, 10),
+            page: safePage,
+            limit: safeLimit,
         };
     }
 
