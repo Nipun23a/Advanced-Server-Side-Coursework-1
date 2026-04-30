@@ -92,6 +92,11 @@ export const validateGenerateKey = [
       .optional()
       .isInt({ min: 1 }).withMessage('User ID must be a positive integer.'),
 
+  body('client_type')
+      .optional()
+      .isIn(['analytics_dashboard', 'ar_app', 'third_party'])
+      .withMessage('client_type must be one of: analytics_dashboard, ar_app, third_party.'),
+
   handleValidationErrors,
 ];
 
