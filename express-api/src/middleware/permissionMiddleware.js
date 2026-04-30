@@ -1,6 +1,6 @@
-import ApiKeyPermissionModel from "../models/ApiKeyPermissionModel";
-import {sendError} from '../utils/responseHelper';
-import {logger} from '../utils/logger';
+import ApiKeyPermissionModel from '../models/ApiKeyPermissionModel.js';
+import {sendError} from '../utils/responseHelper.js';
+import {logger} from '../config/logger.js';
 
 
 const requirePermission = (requiredPermission) => {
