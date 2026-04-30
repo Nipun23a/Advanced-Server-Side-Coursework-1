@@ -354,8 +354,8 @@ router.get(
  *                 page: 1
  *                 limit: 20
  */
-export const alumniRouter = express.Router();
-alumniRouter.get(
+export const alumniRoutes = express.Router();
+alumniRoutes.get(
     '/browse',
     authenticateAny,
     requirePermission('read:alumni'),
