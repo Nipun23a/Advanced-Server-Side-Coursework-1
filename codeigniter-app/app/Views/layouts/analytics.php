@@ -146,14 +146,16 @@
 <!-- ================================================================ -->
 <!-- SIDEBAR                                                           -->
 <!-- ================================================================ -->
+<?php $sidebarRole = session()->get('user_role'); ?>
 <nav id="sidebar">
     <div class="sidebar-brand">
         <i class="bi bi-mortarboard-fill me-2"></i>
-        Analytics Dashboard
+        Alumni Influencers
     </div>
 
     <ul class="nav flex-column mt-2">
 
+        <!-- Dashboard — all roles -->
         <li class="nav-item">
             <a href="/dashboard"
                class="nav-link <?= uri_string() === 'dashboard' ? 'active' : '' ?>">
@@ -161,6 +163,8 @@
             </a>
         </li>
 
+        <?php if ($sidebarRole === 'admin'): ?>
+        <!-- ---- University Staff ---- -->
         <div class="nav-section">Analytics</div>
 
         <li class="nav-item">
@@ -232,23 +236,33 @@
                 <i class="bi bi-download"></i> Export
             </a>
         </li>
-
-        <?php if (session()->get('user_role') === 'developer' || session()->get('user_role') === 'admin'): ?>
-            <div class="nav-section">Developer</div>
-            <li class="nav-item">
-                <a href="/developer/api-keys"
-                   class="nav-link <?= uri_string() === 'developer/api-keys' ? 'active' : '' ?>">
-                    <i class="bi bi-key"></i> API Keys
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="/developer/api-docs"
-                   class="nav-link <?= uri_string() === 'developer/api-docs' ? 'active' : '' ?>">
-                    <i class="bi bi-file-earmark-text"></i> API Docs
-                </a>
-            </li>
         <?php endif; ?>
 
+        <?php if ($sidebarRole === 'developer'): ?>
+        <!-- ---- Developer ---- -->
+        <div class="nav-section">Developer</div>
+
+        <li class="nav-item">
+            <a href="/developer/api-keys"
+               class="nav-link <?= uri_string() === 'developer/api-keys' ? 'active' : '' ?>">
+                <i class="bi bi-key"></i> API Keys
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/developer/api-docs"
+               class="nav-link <?= uri_string() === 'developer/api-docs' ? 'active' : '' ?>">
+                <i class="bi bi-file-earmark-text"></i> API Docs
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/developer/usage"
+               class="nav-link <?= uri_string() === 'developer/usage' ? 'active' : '' ?>">
+                <i class="bi bi-activity"></i> Usage
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <!-- ---- Account — all roles ---- -->
         <div class="nav-section">Account</div>
 
         <li class="nav-item">
@@ -257,6 +271,8 @@
                 <i class="bi bi-person-circle"></i> My Profile
             </a>
         </li>
+
+        <?php if ($sidebarRole === 'alumni'): ?>
         <li class="nav-item">
             <a href="/bidding"
                class="nav-link <?= str_starts_with(uri_string(), 'bidding') ? 'active' : '' ?>">
@@ -269,6 +285,8 @@
                 <i class="bi bi-gift"></i> Sponsorships
             </a>
         </li>
+        <?php endif; ?>
+
         <li class="nav-item">
             <a href="/auth/logout" class="nav-link">
                 <i class="bi bi-box-arrow-right"></i> Logout
