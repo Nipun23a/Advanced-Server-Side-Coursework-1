@@ -19,7 +19,7 @@ class ApiKeyService {
         const rawKey = TokenGeneration.generateAPIKey();
         const keyHash = TokenGeneration.hashToken(rawKey);
         const result = await ApiKeyModel.create(userId, keyHash);
-        const apiKeyId = result.insertId;
+        const apiKeyId = result.id;
 
         const permissions = ApiKeyPermissionModel.getPermissionsForClientType(clientType);
         await ApiKeyPermissionModel.assignPermissions(apiKeyId, permissions);
@@ -43,9 +43,9 @@ class ApiKeyService {
         const rawKey = TokenGeneration.generateAPIKey();
         const keyHash = TokenGeneration.hashToken(rawKey);
         const result = await ApiKeyModel.create(userId,keyHash);
-        logger.info(`API key generated: key_id=${result.insertId}, user_id=${userId}`);
+        logger.info(`API key generated: key_id=${result.id}, user_id=${userId}`);
         return {
-            key_id: result.insertId,
+            key_id: result.id,
             key: rawKey,
             warning: 'Save this key now. You will not be able to see it again!',
         };
@@ -72,7 +72,15 @@ class ApiKeyService {
 
     static async listKeys(userId) {
         const keys = await ApiKeyModel.findAllByUser(userId);
-        return { keys };
+
+        return {
+            keys: keys.map((key) => ({
+                ...key,
+                permissions: key.client_type
+                    ? ApiKeyPermissionModel.getPermissionsForClientType(key.client_type)
+                    : [],
+            })),
+        };
     }
 
     static async getKeyStats(keyId){

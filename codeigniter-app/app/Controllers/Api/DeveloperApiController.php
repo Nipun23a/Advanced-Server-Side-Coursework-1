@@ -47,8 +47,22 @@ class DeveloperApiController extends BaseController
     public function create()
     {
         try {
+            $json = $this->request->getJSON(true) ?? [];
+            $clientType = $json['client_type'] ?? $this->request->getPost('client_type');
+            $clientType = is_string($clientType) ? trim($clientType) : '';
+
+            $allowedClientTypes = ['analytics_dashboard', 'ar_app', 'third_party'];
+
+            if ($clientType === '' || !in_array($clientType, $allowedClientTypes, true)) {
+                return $this->response->setStatusCode(422)->setJSON([
+                    'success' => false,
+                    'message' => 'client_type must be one of: analytics_dashboard, ar_app, third_party.',
+                ]);
+            }
+
             $response = $this->apiClient->post('/api/v1/api-keys', [
-                'user_id' => $this->getUserId()
+                'user_id' => $this->getUserId(),
+                'client_type' => $clientType,
             ]);
 
             return $this->response->setJSON($response);

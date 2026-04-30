@@ -39,10 +39,11 @@ class ApiKeyModel {
 
     static async findAllByUser(userId) {
         const [rows] = await pool.execute(
-            `SELECT id, is_active, created_at, revoked_at
-             FROM api_keys
-             WHERE user_id = ?
-             ORDER BY created_at DESC`,
+            `SELECT ak.id, ak.is_active, ak.created_at, ak.revoked_at, aks.client_type
+             FROM api_keys ak
+             LEFT JOIN api_key_scopes aks ON aks.api_key_id = ak.id
+             WHERE ak.user_id = ?
+             ORDER BY ak.created_at DESC`,
             [userId]
         );
         return rows;

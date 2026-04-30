@@ -87,6 +87,22 @@
             };
         }
 
+        function getApiMessage(payload, fallback) {
+            return payload?.message || payload?.error?.message || fallback;
+        }
+
+        function getKeyPayload(payload) {
+            if (payload?.data?.key) {
+                return payload.data;
+            }
+
+            if (payload?.data?.data?.key) {
+                return payload.data.data;
+            }
+
+            return null;
+        }
+
         function renderPermissionBadges(permissions) {
             if (!permissions || permissions.length === 0) {
                 return '<span class="badge bg-secondary">No permissions</span>';
@@ -216,7 +232,7 @@
                     <strong>ID: ${key.id}</strong>
                     ${statusBadge}
                     <div class="mt-2">
-                        <span class="badge bg-primary-subtle text-primary-emphasis border">${meta.label}</span>
+                        <span class="badge bg-primary">${meta.label}</span>
                     </div>
                     <div class="small text-muted mt-1">Stored scope: ${clientType}</div>
                     <div class="mt-2">${renderPermissionBadges(key.permissions)}</div>
@@ -255,21 +271,22 @@
                 body: JSON.stringify({ client_type: clientType }),
             });
             const data = await res.json();
+            const keyPayload = getKeyPayload(data);
 
-            if (data.success && data.data) {
-                const meta = getClientTypeMeta(data.data.client_type || clientType);
-                const permissions = (data.data.permissions || meta.permissions).join(', ');
+            if (data.success && keyPayload?.key) {
+                const meta = getClientTypeMeta(keyPayload.client_type || clientType);
+                const permissions = (keyPayload.permissions || meta.permissions).join(', ');
 
                 alert(
                     "Your API Key:\n" +
-                    data.data.key +
+                    keyPayload.key +
                     "\n\nClient Type: " + meta.label +
-                    "\nStored Scope: " + (data.data.client_type || clientType) +
+                    "\nStored Scope: " + (keyPayload.client_type || clientType) +
                     "\nPermissions: " + permissions +
                     "\n\nSave it securely. You won't see it again."
                 );
             } else {
-                alert(data.message || "Failed to generate key");
+                alert(getApiMessage(data, "Failed to generate key"));
             }
 
             loadKeys();
