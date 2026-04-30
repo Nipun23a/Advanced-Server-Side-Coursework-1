@@ -14,6 +14,7 @@ import sponsorshipRoutes from "./src/routes/sponsorshipRoutes.js";
 import apiKeyRoutes from "./src/routes/apiKeyRoutes.js";
 import winnerRoutes from "./src/routes/winnerRoutes.js";
 import biddingRoutes from "./src/routes/biddingRoutes.js";
+import analyticsRoutes, {alumniRoutes} from "./src/routes/analyticsRoutes.js";
 import {errorHandler, notFoundHandler} from "./src/middleware/errorHandler.js";
 import {logger} from "./src/config/logger.js";
 import startCronJobs from "./src/cron/WinerSelection.js";
@@ -60,6 +61,8 @@ app.get('/api/v1/health', (req, res) => {
     });
 });
 
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/alumni', alumniRoutes);
 app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/bids', biddingRoutes);
 app.use('/api/v1/winners', winnerRoutes);

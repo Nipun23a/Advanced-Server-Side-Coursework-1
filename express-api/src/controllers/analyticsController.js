@@ -1,7 +1,6 @@
-import AnalyticsService from "../services/AnalyticsService";
-import { sendSuccess, sendError } from "../utils/responseHelper";
-
-import { logger } from "../config/logger";
+import AnalyticsService from "../services/AnalyticsService.js";
+import { sendSuccess, sendError } from "../utils/responseHelper.js";
+import { logger } from "../config/logger.js";
 
 class AnalyticsController {
     static async getSummary(req, res) {
