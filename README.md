@@ -245,13 +245,13 @@ Important implementation notes:
 ```text
 codeigniter-app/
 +-- app/
-¦   +-- Config/
-¦   +-- Controllers/
-¦   +-- Database/Migrations/
-¦   +-- Filters/
-¦   +-- Helpers/
-¦   +-- Models/
-¦   +-- Views/
+ï¿½   +-- Config/
+ï¿½   +-- Controllers/
+ï¿½   +-- Database/Migrations/
+ï¿½   +-- Filters/
+ï¿½   +-- Helpers/
+ï¿½   +-- Models/
+ï¿½   +-- Views/
 +-- public/
 +-- writable/
 ```
@@ -261,14 +261,14 @@ codeigniter-app/
 ```text
 express-api/
 +-- src/
-¦   +-- config/
-¦   +-- controllers/
-¦   +-- cron/
-¦   +-- middleware/
-¦   +-- models/
-¦   +-- routes/
-¦   +-- services/
-¦   +-- utils/
+ï¿½   +-- config/
+ï¿½   +-- controllers/
+ï¿½   +-- cron/
+ï¿½   +-- middleware/
+ï¿½   +-- models/
+ï¿½   +-- routes/
+ï¿½   +-- services/
+ï¿½   +-- utils/
 +-- logs/
 +-- server.js
 ```
@@ -290,7 +290,7 @@ express-api/
 - LinkedIn URL
 - profile image upload
 - degrees with completion dates and URLs
-- certificates with completion dates
+- certificates with completion dates and course page URLs
 - licenses with completion and expiry dates
 - professional courses with completion dates
 - employment history with start and end dates
@@ -304,7 +304,7 @@ express-api/
 - cancellation support
 - monthly winner limit enforcement
 - event-attendance bonus path for a 4th monthly slot
-- automated winner selection for the next day at `6:00 PM Europe/London`
+- automated winner selection at midnight `00:00 Europe/London`
 - winner and loser email notifications
 
 ### Sponsorship Model
@@ -420,7 +420,7 @@ Implemented protections include:
 
 The Express API schedules:
 
-- daily winner selection at `18:00 Europe/London`
+- daily winner selection at `00:00 Europe/London` (midnight)
 - monthly cleanup trigger at midnight on the first day of each month
 
 ## Testing and Verification
