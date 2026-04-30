@@ -66,6 +66,19 @@ $routes->group('', ['filter' => ['auth', 'verified']], function ($routes) {
     $routes->get('sponsorship/offers',                      'SponsorshipController::offers');
     $routes->post('sponsorship/offers/respond/(:num)',      'SponsorshipController::respond/$1');
 
+    // ---- Analytics ----
+    $routes->group('analytics', function ($routes) {
+        $routes->get('/',                    'AnalyticsController::index');
+        $routes->get('skills-gap',           'AnalyticsController::skillsGap');
+        $routes->get('employment-sectors',   'AnalyticsController::employmentSectors');
+        $routes->get('job-titles',           'AnalyticsController::jobTitles');
+        $routes->get('top-employers',        'AnalyticsController::topEmployers');
+        $routes->get('certification-trends', 'AnalyticsController::certificationTrends');
+        $routes->get('license-distribution', 'AnalyticsController::licenseDistribution');
+        $routes->get('career-pathways',      'AnalyticsController::careerPathways');
+        $routes->get('graduation-outcomes',  'AnalyticsController::graduationOutcomes');
+    });
+
     // ---- Developer pages (HTML views) ----
     $routes->group('developer', function ($routes) {
         $routes->get('api-keys', 'DeveloperController::apiKeys');
