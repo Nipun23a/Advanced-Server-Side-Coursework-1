@@ -67,7 +67,7 @@
 <div class="row g-3 mb-4">
 
     <!-- Skills Gap mini bar -->
-    <div class="col-lg-8">
+    <div class="col-lg-12">
         <div class="chart-card">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
@@ -85,9 +85,10 @@
             <canvas id="dashSkillsChart" height="120"></canvas>
         </div>
     </div>
+</div>
 
-    <!-- Employment Sectors mini doughnut -->
-    <div class="col-lg-4">
+<div class="row g-3 mb-4">
+    <div class="col-lg-12">
         <div class="chart-card">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
@@ -99,14 +100,13 @@
             <canvas id="dashSectorsChart" height="150"></canvas>
         </div>
     </div>
-
 </div>
 
 <!-- ---- Cert Trend + Alumni of the Day ---- -->
 <div class="row g-3">
 
     <!-- Certification Trend line -->
-    <div class="col-lg-8">
+    <div class="col-lg-12">
         <div class="chart-card">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
@@ -121,72 +121,6 @@
             <canvas id="dashTrendChart" height="120"></canvas>
         </div>
     </div>
-
-    <!-- Featured alumni card -->
-    <div class="col-lg-4">
-        <div class="chart-card">
-            <div class="chart-title mb-3">
-                <i class="bi bi-star-fill text-warning me-1"></i> Alumni of the Day
-            </div>
-
-            <?php if (! empty($featured)): ?>
-                <div class="text-center">
-
-                    <?php if (! empty($featured['profile_image_url'])): ?>
-                        <img src="<?= esc($featured['profile_image_url']) ?>"
-                             class="rounded-circle mb-2"
-                             width="64" height="64"
-                             style="object-fit:cover">
-                    <?php else: ?>
-                        <div class="rounded-circle bg-primary d-inline-flex align-items-center
-                                    justify-content-center mb-2"
-                             style="width:64px;height:64px">
-                            <i class="bi bi-person-fill text-white fs-3"></i>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="fw-semibold"><?= esc($featured['email'] ?? '') ?></div>
-
-                    <?php if (! empty($featured['bio'])): ?>
-                        <div class="text-muted mt-1" style="font-size:.8rem">
-                            <?= esc(mb_substr($featured['bio'], 0, 120)) ?>
-                            <?= mb_strlen($featured['bio']) > 120 ? '…' : '' ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Credential counts -->
-                    <div class="d-flex justify-content-center gap-4 mt-3">
-                        <div>
-                            <div class="fw-bold"><?= count($featured['certificates'] ?? []) ?></div>
-                            <div class="text-muted" style="font-size:.75rem">Certs</div>
-                        </div>
-                        <div>
-                            <div class="fw-bold"><?= count($featured['licenses'] ?? []) ?></div>
-                            <div class="text-muted" style="font-size:.75rem">Licenses</div>
-                        </div>
-                        <div>
-                            <div class="fw-bold"><?= count($featured['degrees'] ?? []) ?></div>
-                            <div class="text-muted" style="font-size:.75rem">Degrees</div>
-                        </div>
-                    </div>
-
-                    <?php if (! empty($featured['linkedin_url'])): ?>
-                        <a href="<?= esc($featured['linkedin_url']) ?>"
-                           target="_blank" rel="noopener"
-                           class="btn btn-sm btn-outline-primary mt-3">
-                            <i class="bi bi-linkedin me-1"></i> LinkedIn
-                        </a>
-                    <?php endif; ?>
-
-                </div>
-            <?php else: ?>
-                <p class="text-muted text-center mt-3">
-                    <i class="bi bi-info-circle me-1"></i>
-                    No featured alumni today yet.
-                </p>
-            <?php endif; ?>
-
-        </div>
     </div>
 
 </div>

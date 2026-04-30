@@ -14,6 +14,8 @@ class WinnerController {
                     404
                 );
             }
+
+            return sendSuccess(res, result, "Featured alumni retrieved successfully.");
         }catch (error){
             logger.error('WinnerController.getTodayFeatures FAILED:', {
                 message: error.message,

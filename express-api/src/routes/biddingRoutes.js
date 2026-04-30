@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticateAny, authenticateInternal } from '../middleware/authMiddleware.js';
+import { authenticateInternal } from '../middleware/authMiddleware.js';
 import { biddingLimiter } from '../middleware/rateLimiter.js';
 import {
     validatePlaceBid,
@@ -256,7 +256,7 @@ router.post(
  */
 router.get(
     '/status',
-    authenticateAny,
+    authenticateInternal,
     BiddingController.getBidStatus
 );
 
@@ -295,7 +295,7 @@ router.get(
  */
 router.get(
     '/history',
-    authenticateAny,
+    authenticateInternal,
     validatePagination,
     BiddingController.getBidHistory
 );
@@ -338,7 +338,7 @@ router.get(
  */
 router.get(
     '/monthly-limit',
-    authenticateAny,
+    authenticateInternal,
     BiddingController.getMonthlyLimit
 );
 
@@ -374,7 +374,7 @@ router.get(
  */
 router.get(
     '/balance',
-    authenticateAny,
+    authenticateInternal,
     BiddingController.getAvailableBalance
 );
 

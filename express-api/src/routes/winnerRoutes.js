@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticateAny, authenticateInternal } from '../middleware/authMiddleware.js';
+import { authenticateInternal } from '../middleware/authMiddleware.js';
 import { validatePagination } from '../middleware/inputValidator.js';
 import WinnerController from '../controllers/WinnerController.js';
 
@@ -27,7 +27,7 @@ const router = express.Router();
  *       401:
  *         description: Authentication required
  */
-router.get('/today', authenticateAny, WinnerController.getTodayWinner);
+router.get('/today', authenticateInternal, WinnerController.getTodayWinner);
 
 /**
  * @swagger
@@ -59,7 +59,8 @@ router.get('/today', authenticateAny, WinnerController.getTodayWinner);
  *       401:
  *         description: Authentication required
  */
-router.get('/history', authenticateAny, validatePagination, WinnerController.getWinnerHistory);
+router.get('/history', authenticateInternal, validatePagination, WinnerController.getWinnerHistory);
+
 
 /**
  * @swagger
