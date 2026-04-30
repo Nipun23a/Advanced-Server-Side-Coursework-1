@@ -4,7 +4,7 @@ export const corsOptions = {
             return callback(null, true);
         }
 
-        const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080')
+        const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:8080' || 'http://localhost:3000')
             .split(',')
             .map(origin => origin.trim());
 
