@@ -74,15 +74,19 @@ $routes->group('', ['filter' => ['auth', 'verified']], function ($routes) {
 
     // ---- Analytics ----
     $routes->group('analytics', function ($routes) {
-        $routes->get('/',                    'AnalyticsController::index');
-        $routes->get('skills-gap',           'AnalyticsController::skillsGap');
-        $routes->get('employment-sectors',   'AnalyticsController::employmentSectors');
-        $routes->get('job-titles',           'AnalyticsController::jobTitles');
-        $routes->get('top-employers',        'AnalyticsController::topEmployers');
-        $routes->get('certification-trends', 'AnalyticsController::certificationTrends');
-        $routes->get('license-distribution', 'AnalyticsController::licenseDistribution');
-        $routes->get('career-pathways',      'AnalyticsController::careerPathways');
-        $routes->get('graduation-outcomes',  'AnalyticsController::graduationOutcomes');
+        $routes->get('/',                        'AnalyticsController::index');
+        $routes->get('skills-gap',               'AnalyticsController::skillsGap');
+        $routes->get('employment-sectors',       'AnalyticsController::employmentSectors');
+        $routes->get('job-titles',               'AnalyticsController::jobTitles');
+        $routes->get('top-employers',            'AnalyticsController::topEmployers');
+        $routes->get('certification-trends',     'AnalyticsController::certificationTrends');
+        $routes->get('license-distribution',     'AnalyticsController::licenseDistribution');
+        $routes->get('career-pathways',          'AnalyticsController::careerPathways');
+        $routes->get('graduation-outcomes',      'AnalyticsController::graduationOutcomes');
+        // JSON endpoints for dashboard mini-charts
+        $routes->get('skills-gap-json',          'AnalyticsController::skillsGapJson');
+        $routes->get('employment-sectors-json',  'AnalyticsController::employmentSectorsJson');
+        $routes->get('certification-trends-json','AnalyticsController::certificationTrendsJson');
     });
 
     // ---- Export ----

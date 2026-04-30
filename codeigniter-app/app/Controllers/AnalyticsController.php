@@ -139,6 +139,34 @@ class AnalyticsController extends BaseController
         ]);
     }
 
+    // ---- JSON proxies for dashboard mini-charts -------------------------
+    // These are called via fetch() from the dashboard JS.
+    // They proxy directly to Express and return raw JSON.
+
+    public function skillsGapJson()
+    {
+        $query = array_filter([
+            'limit' => $this->request->getGet('limit') ?? 6,
+        ]);
+        $data = $this->safeAnalyticsGet('/api/v1/analytics/skills-gap', $query);
+        return $this->response->setJSON($data);
+    }
+
+    public function employmentSectorsJson()
+    {
+        $data = $this->safeAnalyticsGet('/api/v1/analytics/employment-sectors');
+        return $this->response->setJSON($data);
+    }
+
+    public function certificationTrendsJson()
+    {
+        $query = array_filter([
+            'months' => $this->request->getGet('months') ?? 24,
+        ]);
+        $data = $this->safeAnalyticsGet('/api/v1/analytics/certification-trends', $query);
+        return $this->response->setJSON($data);
+    }
+
     // ---- Helpers ---------------------------------------------------------
 
     private function getFilters(): array
