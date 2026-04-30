@@ -6,7 +6,8 @@ class ApiKeyController{
     static async generateKey(req, res) {
         try {
             const userId = req.user?.id || req.internalUserId;
-            //console.log(userId);
+            const clientType = req.body?.client_type;
+
             if (!userId) {
                 return sendError(
                     res,
@@ -16,7 +17,9 @@ class ApiKeyController{
                 );
             }
 
-            const result = await ApiKeyService.generateKey(userId);
+            const result = clientType
+                ? await ApiKeyService.generateKeyWithScope(userId, clientType)
+                : await ApiKeyService.generateKey(userId);
 
             return sendSuccess(
                 res,
@@ -31,6 +34,10 @@ class ApiKeyController{
                 stack: error.stack,
                 ip: req.ip,
             });
+
+            if (error.code === 'INVALID_CLIENT_TYPE') {
+                return sendError(res, error.code, error.message, error.status);
+            }
 
             return sendError(
                 res,
