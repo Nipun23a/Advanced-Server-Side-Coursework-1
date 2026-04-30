@@ -85,6 +85,13 @@ $routes->group('', ['filter' => ['auth', 'verified']], function ($routes) {
         $routes->get('graduation-outcomes',  'AnalyticsController::graduationOutcomes');
     });
 
+    // ---- Export ----
+    $routes->group('export', function ($routes) {
+        $routes->get('/',    'ExportController::index');
+        $routes->get('csv',  'ExportController::exportCsv');
+        $routes->get('pdf',  'ExportController::exportPdf');
+    });
+
     // ---- Developer pages (HTML views) ----
     $routes->group('developer', function ($routes) {
         $routes->get('api-keys', 'DeveloperController::apiKeys');
