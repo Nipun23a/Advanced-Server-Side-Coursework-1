@@ -66,6 +66,12 @@ $routes->group('', ['filter' => ['auth', 'verified']], function ($routes) {
     $routes->get('sponsorship/offers',                      'SponsorshipController::offers');
     $routes->post('sponsorship/offers/respond/(:num)',      'SponsorshipController::respond/$1');
 
+    // ---- Alumni Browser ----
+    $routes->group('alumni', function ($routes) {
+        $routes->get('/',      'AlumniController::index');
+        $routes->get('(:num)', 'AlumniController::show/$1');
+    });
+
     // ---- Analytics ----
     $routes->group('analytics', function ($routes) {
         $routes->get('/',                    'AnalyticsController::index');
