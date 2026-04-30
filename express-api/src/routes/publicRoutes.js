@@ -1,5 +1,6 @@
 import express from 'express';
 import {authenticateAny, authenticateBearer} from "../middleware/authMiddleware.js";
+import { requirePermission } from '../middleware/permissionMiddleware.js';
 import {validatePagination} from "../middleware/inputValidator.js";
 import WinnerController from "../controllers/winnerController.js";
 
@@ -31,7 +32,12 @@ const router = express.Router();
  *       404:
  *         description: No alumni featured today
  */
-router.get('/featured-alumni/today', authenticateBearer, WinnerController.getTodayFeatures);
+router.get(
+    '/featured-alumni/today',
+    authenticateBearer,
+    requirePermission('read:alumni_of_day'),
+    WinnerController.getTodayFeatures
+);
 
 /**
  * @swagger
@@ -60,6 +66,12 @@ router.get('/featured-alumni/today', authenticateBearer, WinnerController.getTod
  *       401:
  *         description: Missing or invalid API key
  */
-router.get('/featured-alumni/history', authenticateBearer, validatePagination, WinnerController.getFeaturedHistory);
+router.get(
+    '/featured-alumni/history',
+    authenticateBearer,
+    requirePermission('read:alumni_of_day'),
+    validatePagination,
+    WinnerController.getFeaturedHistory
+);
 
 export default router;

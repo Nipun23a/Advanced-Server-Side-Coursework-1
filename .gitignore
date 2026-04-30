@@ -76,3 +76,5 @@ logs/
 *.msm
 *.msp
 *.lnk
+express-api/src/logs/error.log
+express-api/src/logs/combined.log
