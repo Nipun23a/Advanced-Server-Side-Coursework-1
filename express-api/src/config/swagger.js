@@ -94,7 +94,8 @@ Authentication:
         "./src/routes/publicRoutes.js",
         "./src/routes/sponsorshipRoutes.js",
         "./src/routes/biddingRoutes.js",
-        "./src/routes/winnerRoutes.js"
+        "./src/routes/winnerRoutes.js",
+        "./src/routes/analyticsRoutes.js"
     ]
 
 };
